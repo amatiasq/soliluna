@@ -1,5 +1,9 @@
 import * as yup from 'yup';
-import { Ingredient, IngredientId } from './Ingredient';
+import {
+  calculateIngredientCost,
+  Ingredient,
+  IngredientId,
+} from './Ingredient';
 import { smallestUnit, Unit } from './Unit';
 
 export interface IngredientUsage {
@@ -26,4 +30,21 @@ export function ingredientToUsage(ingredient: Ingredient): IngredientUsage {
     amount: '' as any,
     unit: smallestUnit(ingredient.pkgUnit),
   };
+}
+
+export function calculateIngredientsCost(
+  ingredients: IngredientUsage[],
+  all: Ingredient[]
+): number {
+  for (const ingredient of ingredients) {
+    const match = all.find((x) => x.id === ingredient.id);
+
+    ingredient.cost = calculateIngredientCost(
+      match,
+      ingredient.amount,
+      ingredient.unit
+    );
+  }
+
+  return ingredients.reduce((sum, x) => sum + x.cost, 0);
 }

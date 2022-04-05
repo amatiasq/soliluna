@@ -16,7 +16,9 @@ import { FormList } from '../components/FormList';
 import { Loading } from '../components/Loading';
 import { NumberInput } from '../components/NumberInput';
 import { useFireList } from '../hooks/useFireList';
-import { Recipe, RecipeId } from '../model/Recipe';
+import { Ingredient } from '../model/Ingredient';
+import { calculateIngredientsCost } from '../model/IngredientUsage';
+import { calculateRecipeCost, Recipe, RecipeId } from '../model/Recipe';
 import { RecipeUsage } from '../model/RecipeUsage';
 import { printUnit } from '../model/Unit';
 import { focusNextInput } from '../util/focusNextInput';
@@ -32,14 +34,17 @@ export function RequiredRecipes({ gridArea, pax }: RequiredRecipesProps) {
   const { data, isLoading } = useFireList<Recipe>('recetas', {
     orderBy: 'name',
   });
+  const ingredients = useFireList<Ingredient>('ingredientes', {
+    orderBy: 'name',
+  });
 
-  if (isLoading) {
+  if (isLoading || ingredients.isLoading) {
     return <Loading />;
   }
 
   const getRecipe = (id: RecipeId) => data.find((x) => x.id === id)!;
   const names = data.map((x) => ({ value: x.id, label: x.name }));
-  const [{ ingredients, ...defaultRecipe }] = data;
+  const [{ ingredients: _, ...defaultRecipe }] = data;
 
   return (
     <FormList<RecipeUsage>
@@ -72,9 +77,12 @@ export function RequiredRecipes({ gridArea, pax }: RequiredRecipesProps) {
           item.amount = pax;
         }
 
-        item.cost = recipe.amount
-          ? (recipe.cost / recipe.amount) * item.amount
-          : 0;
+        recipe.cost = calculateIngredientsCost(
+          recipe.ingredients,
+          ingredients.data
+        );
+
+        item.cost = calculateRecipeCost(recipe, item.amount);
 
         return (
           <Grid

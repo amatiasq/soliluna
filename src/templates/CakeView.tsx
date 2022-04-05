@@ -69,12 +69,16 @@ export function CakeView() {
                 "name name"
                 "pax cost"
                 "price price"
+                "recipes recipes"
+                "ingredients ingredients"
                 / 1fr 1fr
               `,
                 `
                   "name name name"
                   "pax cost price"
-                  / 1fr 2fr 2fr
+                  "recipes recipes recipes"
+                  "ingredients ingredients ingredients"
+                    / 1fr 2fr 2fr
                 `,
               ]}
             >
@@ -91,6 +95,9 @@ export function CakeView() {
                 label="PAX"
                 as={NumberInput}
               />
+
+              <RequiredRecipes gridArea="recipes" pax={values.pax} />
+              <RequiredIngredients gridArea="ingredients" />
 
               <FormControl gridArea="cost">
                 <FormLabel>Coste</FormLabel>
@@ -119,9 +126,6 @@ export function CakeView() {
                 </InputGroup>
               </FormControl>
             </Grid>
-
-            <RequiredRecipes gridArea="recipes" pax={values.pax} />
-            <RequiredIngredients gridArea="ingredients" />
           </VStack>
         );
       }}

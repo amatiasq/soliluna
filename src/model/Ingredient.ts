@@ -18,11 +18,12 @@ export const ingredientSchema = yup.object().shape({
   pkgPrice: yup.number().positive().required(),
 });
 
-export function calculateIngredientPrice(
-  ingredient: Ingredient,
+export function calculateIngredientCost(
+  ingredient: Ingredient | null | undefined,
   amount: number,
   unit: Unit
 ) {
+  if (!ingredient) return -1;
   if (!amount || !unit) return 0;
   const base = convert(amount, unit, ingredient.pkgUnit);
   return (ingredient.pkgPrice / ingredient.pkgSize) * base;

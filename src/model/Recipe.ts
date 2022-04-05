@@ -20,3 +20,7 @@ export const recipeSchema = yup.object().shape({
   cost: yup.number().required(),
   ingredients: yup.array().of(ingredientUsageSchema.required()).required(),
 });
+
+export function calculateRecipeCost(recipe: Recipe, amount: number): number {
+  return recipe.amount ? (recipe.cost / recipe.amount) * amount : 0;
+}

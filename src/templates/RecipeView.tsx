@@ -21,6 +21,9 @@ import { Loading } from '../components/Loading';
 import { NumberInput } from '../components/NumberInput';
 import { AUTOSAVE_DELAY } from '../constants';
 import { useFire } from '../hooks/useFire';
+import { useFireList } from '../hooks/useFireList';
+import { Ingredient } from '../model/Ingredient';
+import { calculateIngredientsCost } from '../model/IngredientUsage';
 import { Recipe, RecipeId, recipeSchema } from '../model/Recipe';
 import { RecipeUnit } from '../model/RecipeUnit';
 import { capitalise } from '../util/capitalise';
@@ -33,12 +36,14 @@ export interface RecipeViewProps {}
 export function RecipeView() {
   const { id } = useParams<{ id: RecipeId }>();
   const { isLoading, data, set } = useFire<Recipe>('recetas', id!);
+  const ingredients = useFireList<Ingredient>('ingredientes');
+
   const save = useCallback(
     (values: Recipe) => set({ ...values, name: capitalise(values.name) }),
     [set]
   );
 
-  if (isLoading) {
+  if (isLoading || ingredients.isLoading) {
     return <Loading />;
   }
 
@@ -50,7 +55,10 @@ export function RecipeView() {
       onSubmit={save}
     >
       {({ values }) => {
-        values.cost = values.ingredients.reduce((sum, x) => sum + x.cost, 0);
+        values.cost = calculateIngredientsCost(
+          values.ingredients,
+          ingredients.data
+        );
 
         return (
           <VStack align="stretch">

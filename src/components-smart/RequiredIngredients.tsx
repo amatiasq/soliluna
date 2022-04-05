@@ -14,7 +14,7 @@ import { Loading } from '../components/Loading';
 import { NumberInput } from '../components/NumberInput';
 import { useFireList } from '../hooks/useFireList';
 import {
-  calculateIngredientPrice,
+  calculateIngredientCost,
   Ingredient,
   IngredientId,
 } from '../model/Ingredient';
@@ -69,11 +69,7 @@ export function RequiredIngredients({ gridArea }: RequiredIngredientsProps) {
           item.unit = smallestUnit(ingredient.pkgUnit);
         }
 
-        item.cost = calculateIngredientPrice(
-          ingredient,
-          item.amount,
-          item.unit
-        );
+        item.cost = calculateIngredientCost(ingredient, item.amount, item.unit);
 
         return (
           <Grid
