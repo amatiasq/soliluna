@@ -22,7 +22,7 @@ function AutoSaveAction({ debounceMs }: { debounceMs: number }) {
     if (formik.dirty) {
       scheduler.restart();
     }
-  }, [formik.values]);
+  }, [JSON.stringify(formik.values)]);
 
   useEffect(() => emergencySave);
 

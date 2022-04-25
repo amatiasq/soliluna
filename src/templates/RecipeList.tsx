@@ -27,7 +27,12 @@ export function RecipeList() {
   }
 
   async function create() {
-    const item = await add({ name: 'Nueva receta', pax: 8, ingredients: [] });
+    const item = await add({
+      name: 'Nueva receta',
+      cost: 0,
+      pax: 8,
+      ingredients: [],
+    });
     navigate(`/recetas/${item.id}`);
   }
 
@@ -49,7 +54,7 @@ export function RecipeList() {
       </HStack>
 
       {data.map((x) => (
-        <LinkBox>
+        <LinkBox key={x.id}>
           <RecipleListView data={x} remove={() => remove(x)} />
         </LinkBox>
       ))}

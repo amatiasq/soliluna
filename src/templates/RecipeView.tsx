@@ -20,6 +20,7 @@ import { bindFormControl } from '../components/FormControl';
 import { FormList } from '../components/FormList';
 import { Loading } from '../components/Loading';
 import { NumberInput } from '../components/NumberInput';
+import { AUTOSAVE_DELAY } from '../constants';
 import { useFire } from '../hooks/useFire';
 import { useFireList } from '../hooks/useFireList';
 import { Ingredient, IngredientId } from '../model/Ingredient';
@@ -60,7 +61,7 @@ export function RecipeView() {
       <AutoSaveForm
         initialValues={data}
         validationSchema={recipeSchema}
-        delayMs={300}
+        delayMs={AUTOSAVE_DELAY}
         onSubmit={(x) => set(x)}
       >
         {({ values }) => {
@@ -93,6 +94,12 @@ export function RecipeView() {
               >
                 {({ index, item, remove }) => {
                   const ingredient = getIngredient(item.id);
+
+                  if (!ingredient) {
+                    remove();
+                    return null;
+                  }
+
                   const units = getConversionsFor(ingredient.pkgUnit);
 
                   if (item.name !== ingredient.name) {

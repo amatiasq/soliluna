@@ -56,7 +56,7 @@ export function CakeList() {
       </HStack>
 
       {data.map((x) => (
-        <LinkBox>
+        <LinkBox key={x.id}>
           <CakeListView data={x} remove={() => remove(x)} />
         </LinkBox>
       ))}

@@ -22,12 +22,7 @@ const firebaseConfig = JSON.parse(stringConfig) as FirebaseOptions;
 
 function Header() {
   return (
-    <HStack
-      as="nav"
-      spacing={4}
-      alignItems="center"
-      display={{ base: 'none', md: 'flex' }}
-    >
+    <HStack as="nav" spacing={4} alignItems="center" marginBottom={8}>
       <Heading as="h1">Soliluna</Heading>
       {pages.map((x) => (
         <Link key={x.path} to={x.path}>

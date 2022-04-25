@@ -20,6 +20,7 @@ import { bindFormControl } from '../components/FormControl';
 import { FormList } from '../components/FormList';
 import { Loading } from '../components/Loading';
 import { NumberInput } from '../components/NumberInput';
+import { AUTOSAVE_DELAY } from '../constants';
 import { useFire } from '../hooks/useFire';
 import { useFireList } from '../hooks/useFireList';
 import { Cake, CakeId, cakeSchema } from '../model/Cake';
@@ -57,7 +58,7 @@ export function CakeView() {
       <AutoSaveForm
         initialValues={data}
         validationSchema={cakeSchema}
-        delayMs={300}
+        delayMs={AUTOSAVE_DELAY}
         onSubmit={(x) => set(x)}
       >
         {({ values }) => {
@@ -109,7 +110,11 @@ export function CakeView() {
               >
                 {({ index, item, remove }) => {
                   const recipe = getRecipe(item.id);
-                  // const units = getConversionsFor(recipe.pkgUnit);
+
+                  if (!recipe) {
+                    remove();
+                    return null;
+                  }
 
                   if (item.name !== recipe.name) {
                     item.name = recipe.name;
