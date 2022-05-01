@@ -1,5 +1,6 @@
 import * as yup from 'yup';
 import { IngredientId } from './Ingredient';
+import { RecipeUnit } from './RecipeUnit';
 import { Unit } from './Unit';
 
 export type RecipeId = `snowflake RecipeId`;
@@ -7,7 +8,8 @@ export type RecipeId = `snowflake RecipeId`;
 export interface Recipe {
   id: RecipeId;
   name: string;
-  pax: number;
+  amount: number;
+  unit: RecipeUnit;
   cost: number;
   ingredients: {
     id: IngredientId;

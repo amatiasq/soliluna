@@ -1,6 +1,7 @@
 import * as yup from 'yup';
 import { Multipliers } from './Multipliers';
-import { RecipeId } from './Recipe';
+import { Recipe } from './Recipe';
+import { RecipeUnit } from './RecipeUnit';
 
 export type CakeId = `snowflake CakeId`;
 
@@ -10,12 +11,7 @@ export interface Cake {
   pax: number;
   cost: number;
   multiplier: Multipliers;
-  recipes: {
-    id: RecipeId;
-    name: string;
-    pax: number;
-    cost: number;
-  }[];
+  recipes: Omit<Recipe, 'ingredients'>[];
 }
 
 export const cakeSchema = yup.object().shape({
@@ -31,7 +27,8 @@ export const cakeSchema = yup.object().shape({
         .shape({
           id: yup.string().required(),
           name: yup.string().required(),
-          pax: yup.number().required(),
+          amount: yup.number().required(),
+          unit: yup.string().oneOf(RecipeUnit),
           cost: yup.number().required(),
         })
         .required()

@@ -25,11 +25,13 @@ import { useFire } from '../hooks/useFire';
 import { useFireList } from '../hooks/useFireList';
 import { Ingredient, IngredientId } from '../model/Ingredient';
 import { Recipe, RecipeId, recipeSchema } from '../model/Recipe';
+import { RecipeUnit } from '../model/RecipeUnit';
 import { convert, getConversionsFor, Unit } from '../model/Unit';
 
 type RecipeIngredient = Recipe['ingredients'][number];
 
 const RecipeControl = bindFormControl<Recipe>();
+const RecipeControlSimple = bindControl<Recipe>();
 const IngredientControl = bindControl<
   RecipeIngredient,
   `ingredients.${number}.`
@@ -70,7 +72,17 @@ export function RecipeView() {
           return (
             <VStack>
               <RecipeControl name="name" label="Nombre" />
-              <RecipeControl name="pax" label="PAX" as={NumberInput} />
+
+              <InputGroup>
+                <RecipeControlSimple name="amount" as={NumberInput} />
+                <InputRightElement width="5rem">
+                  <RecipeControlSimple
+                    name="unit"
+                    as={Dropdown}
+                    options={RecipeUnit}
+                  />
+                </InputRightElement>
+              </InputGroup>
 
               <FormControl>
                 <FormLabel>Coste</FormLabel>

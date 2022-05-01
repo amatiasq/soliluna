@@ -8,6 +8,7 @@ import {
   InputGroup,
   InputLeftElement,
   InputRightAddon,
+  InputRightElement,
   VStack,
 } from '@chakra-ui/react';
 import React from 'react';
@@ -47,7 +48,8 @@ export function CakeView() {
   }
 
   const recipes = recipeList.data;
-  const [first] = recipes;
+  const [defaultFields] = recipes;
+
   const names = recipes.map((x) => ({ value: x.id, label: x.name }));
   const getRecipe = (id: RecipeId) => recipes.find((x) => x.id === id)!;
 
@@ -100,12 +102,7 @@ export function CakeView() {
                 name="recipes"
                 label="Recetas"
                 addLabel="Añadir receta"
-                addItem={() => ({
-                  id: first.id,
-                  name: first.name,
-                  pax: first.pax,
-                  cost: first.cost,
-                })}
+                addItem={() => ({ ...defaultFields, ingredients: [] })}
                 align="stretch"
               >
                 {({ index, item, remove }) => {
@@ -118,11 +115,16 @@ export function CakeView() {
 
                   if (item.name !== recipe.name) {
                     item.name = recipe.name;
-                    item.pax = recipe.pax;
+                    item.amount = recipe.amount;
+                    item.unit = recipe.unit;
                   }
 
-                  item.cost = values.pax
-                    ? (recipe.cost / recipe.pax) * values.pax
+                  if (item.unit === 'PAX') {
+                    item.amount = values.pax;
+                  }
+
+                  item.cost = recipe.amount
+                    ? (recipe.cost / recipe.amount) * item.amount
                     : 0;
 
                   return (
@@ -132,6 +134,17 @@ export function CakeView() {
                         as={Dropdown}
                         options={names}
                       />
+
+                      <InputGroup width="25rem">
+                        <RecipeControl
+                          name={`recipes.${index}.amount`}
+                          as={NumberInput}
+                          isReadOnly={item.unit === 'PAX'}
+                        />
+                        <InputRightElement width="4rem">
+                          <Input value={item.unit} isReadOnly />
+                        </InputRightElement>
+                      </InputGroup>
 
                       <InputGroup>
                         <Input value={item.cost.toFixed(2)} isReadOnly />

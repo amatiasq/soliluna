@@ -15,6 +15,7 @@ import { LinkOverlay } from '../components/Link';
 import { Loading } from '../components/Loading';
 import { useFireList } from '../hooks/useFireList';
 import { Recipe } from '../model/Recipe';
+import { RecipeUnit } from '../model/RecipeUnit';
 
 export function RecipeList() {
   const navigate = useNavigate();
@@ -30,7 +31,8 @@ export function RecipeList() {
     const item = await add({
       name: 'Nueva receta',
       cost: 0,
-      pax: 8,
+      amount: 8,
+      unit: RecipeUnit[0],
       ingredients: [],
     });
     navigate(`/recetas/${item.id}`);
@@ -77,7 +79,9 @@ function RecipleListView({
         </Heading>
 
         <HStack>
-          <Tag>{data.pax} pax</Tag>
+          <Tag>
+            {data.amount} {data.unit}
+          </Tag>
 
           <IconButton
             title="Borrar receta"
