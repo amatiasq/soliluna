@@ -23,10 +23,19 @@ import { NumberInput } from '../components/NumberInput';
 import { AUTOSAVE_DELAY } from '../constants';
 import { useFire } from '../hooks/useFire';
 import { useFireList } from '../hooks/useFireList';
-import { Ingredient, IngredientId } from '../model/Ingredient';
-import { Recipe, RecipeId, recipeSchema } from '../model/Recipe';
+import {
+  calculateIngredientPrice,
+  Ingredient,
+  IngredientId,
+} from '../model/Ingredient';
+import {
+  ingredientToRecipe,
+  Recipe,
+  RecipeId,
+  recipeSchema,
+} from '../model/Recipe';
 import { RecipeUnit } from '../model/RecipeUnit';
-import { convert, getConversionsFor, Unit } from '../model/Unit';
+import { getConversionsFor } from '../model/Unit';
 
 type RecipeIngredient = Recipe['ingredients'][number];
 
@@ -51,7 +60,7 @@ export function RecipeView() {
   }
 
   const ingredients = ingList.data;
-  const [first] = ingredients;
+  const [defaultIngredient] = ingredients;
   const names = ingredients.map((x) => ({ value: x.id, label: x.name }));
   const getIngredient = (id: IngredientId) =>
     ingredients.find((x) => x.id === id)!;
@@ -96,13 +105,7 @@ export function RecipeView() {
                 name="ingredients"
                 label="Ingredientes"
                 addLabel="Añadir ingrediente"
-                addItem={() => ({
-                  id: first.id,
-                  name: first.name,
-                  cost: first.pkgPrice,
-                  amount: first.pkgSize,
-                  unit: first.pkgUnit,
-                })}
+                addItem={() => ingredientToRecipe(defaultIngredient)}
               >
                 {({ index, item, remove }) => {
                   const ingredient = getIngredient(item.id);
@@ -119,7 +122,7 @@ export function RecipeView() {
                     item.unit = ingredient.pkgUnit;
                   }
 
-                  item.cost = calculatePrice(
+                  item.cost = calculateIngredientPrice(
                     ingredient,
                     item.amount,
                     item.unit
@@ -169,10 +172,4 @@ export function RecipeView() {
       </AutoSaveForm>
     </>
   );
-}
-
-function calculatePrice(ingredient: Ingredient, amount: number, unit: Unit) {
-  if (!amount || !unit) return 0;
-  const base = convert(amount, unit, ingredient.pkgUnit);
-  return (ingredient.pkgPrice / ingredient.pkgSize) * base;
 }

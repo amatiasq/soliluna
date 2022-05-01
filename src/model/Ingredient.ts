@@ -1,5 +1,5 @@
 import * as yup from 'yup';
-import { Unit } from './Unit';
+import { convert, Unit } from './Unit';
 
 export type IngredientId = `snowflake IngredientId`;
 
@@ -17,3 +17,13 @@ export const ingredientSchema = yup.object().shape({
   pkgUnit: yup.string().oneOf(Unit).required(),
   pkgPrice: yup.number().positive().required(),
 });
+
+export function calculateIngredientPrice(
+  ingredient: Ingredient,
+  amount: number,
+  unit: Unit
+) {
+  if (!amount || !unit) return 0;
+  const base = convert(amount, unit, ingredient.pkgUnit);
+  return (ingredient.pkgPrice / ingredient.pkgSize) * base;
+}

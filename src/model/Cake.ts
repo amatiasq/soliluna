@@ -12,6 +12,7 @@ export interface Cake {
   cost: number;
   multiplier: Multipliers;
   recipes: Omit<Recipe, 'ingredients'>[];
+  ingredients: Recipe['ingredients'];
 }
 
 export const cakeSchema = yup.object().shape({

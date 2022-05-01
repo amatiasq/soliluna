@@ -1,5 +1,5 @@
 import * as yup from 'yup';
-import { IngredientId } from './Ingredient';
+import { Ingredient, IngredientId } from './Ingredient';
 import { RecipeUnit } from './RecipeUnit';
 import { Unit } from './Unit';
 
@@ -40,3 +40,13 @@ export const recipeSchema = yup.object().shape({
     )
     .required(),
 });
+
+export function ingredientToRecipe(ingredient: Ingredient) {
+  return {
+    id: ingredient.id,
+    name: ingredient.name,
+    cost: ingredient.pkgPrice,
+    amount: ingredient.pkgSize,
+    unit: ingredient.pkgUnit,
+  };
+}
