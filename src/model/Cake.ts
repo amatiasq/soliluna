@@ -1,6 +1,7 @@
 import * as yup from 'yup';
+import { RequiredIngredient } from '../components-smart/RequiredIngredientList';
+import { RequiredRecipe } from '../components-smart/RequiredRecipes';
 import { Multipliers } from './Multipliers';
-import { Recipe } from './Recipe';
 import { RecipeUnit } from './RecipeUnit';
 
 export type CakeId = `snowflake CakeId`;
@@ -11,8 +12,8 @@ export interface Cake {
   pax: number;
   cost: number;
   multiplier: Multipliers;
-  recipes: Omit<Recipe, 'ingredients'>[];
-  ingredients: Recipe['ingredients'];
+  recipes: RequiredRecipe[];
+  ingredients: RequiredIngredient[];
 }
 
 export const cakeSchema = yup.object().shape({

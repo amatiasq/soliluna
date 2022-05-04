@@ -1,5 +1,6 @@
 import * as yup from 'yup';
-import { Ingredient, IngredientId } from './Ingredient';
+import { RequiredIngredient } from '../components-smart/RequiredIngredients';
+import { Ingredient } from './Ingredient';
 import { RecipeUnit } from './RecipeUnit';
 import { Unit } from './Unit';
 
@@ -11,13 +12,7 @@ export interface Recipe {
   amount: number;
   unit: RecipeUnit;
   cost: number;
-  ingredients: {
-    id: IngredientId;
-    name: string;
-    cost: number;
-    amount: number;
-    unit: Unit;
-  }[];
+  ingredients: RequiredIngredient[];
 }
 
 export const recipeSchema = yup.object().shape({
