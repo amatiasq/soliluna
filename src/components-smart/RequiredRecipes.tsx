@@ -5,6 +5,9 @@ import {
   InputGroup,
   InputRightAddon,
   InputRightElement,
+  List,
+  ListItem,
+  Text,
   VStack,
 } from '@chakra-ui/react';
 import React from 'react';
@@ -16,6 +19,7 @@ import { Loading } from '../components/Loading';
 import { useFireList } from '../hooks/useFireList';
 import { Recipe, RecipeId } from '../model/Recipe';
 import { RecipeUsage } from '../model/RecipeUsage';
+import { printUnit } from '../model/Unit';
 
 export interface RequiredRecipesProps {
   pax: number;
@@ -67,7 +71,7 @@ export function RequiredRecipes({ pax }: RequiredRecipesProps) {
           : 0;
 
         return (
-          <VStack>
+          <VStack key={index}>
             <HStack key={index}>
               <RecipeControl
                 name={`recipes.${index}.id`}
@@ -100,20 +104,34 @@ export function RequiredRecipes({ pax }: RequiredRecipesProps) {
               />
             </HStack>
 
-            {recipe.ingredients.map((ingredient, index) => (
-              <HStack key={index} paddingInlineStart="4rem">
-                <Input value={ingredient.name} readOnly />
-                <InputGroup width="25rem">
-                  <Input
-                    value={(ingredient.amount / recipe.amount) * item.amount}
-                    readOnly
-                  />
-                  <InputRightElement width="4rem">
-                    <Input value={ingredient.unit} readOnly />
-                  </InputRightElement>
-                </InputGroup>
-              </HStack>
-            ))}
+            <List>
+              {recipe.ingredients.map((ingredient) => (
+                <ListItem key={ingredient.id}>
+                  <Text textAlign="right">
+                    {printUnit(
+                      (ingredient.amount / recipe.amount) * item.amount,
+                      ingredient.unit
+                    )}
+                  </Text>
+                  <Text>{ingredient.name}</Text>
+                </ListItem>
+
+                // <HStack key={index} paddingInlineStart="4rem">
+                //   <Input value={ingredient.name} readOnly />
+                //   <InputGroup width="25rem">
+                //     <Input
+                //       value={round(
+                //         (ingredient.amount / recipe.amount) * item.amount
+                //       )}
+                //       readOnly
+                //     />
+                //     <InputRightElement width="4rem">
+                //       <Input value={ingredient.unit} readOnly />
+                //     </InputRightElement>
+                //   </InputGroup>
+                // </HStack>
+              ))}
+            </List>
           </VStack>
         );
       }}
