@@ -22,14 +22,8 @@ import { useFire } from '../hooks/useFire';
 import { Recipe, RecipeId, recipeSchema } from '../model/Recipe';
 import { RecipeUnit } from '../model/RecipeUnit';
 
-type RecipeIngredient = Recipe['ingredients'][number];
-
 const RecipeControl = bindFormControl<Recipe>();
 const RecipeControlSimple = bindControl<Recipe>();
-const IngredientControl = bindControl<
-  RecipeIngredient,
-  `ingredients.${number}.`
->();
 
 export interface RecipeViewProps {}
 

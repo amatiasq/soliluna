@@ -47,6 +47,11 @@ export function AutoSaveForm<Values extends FormikValues = FormikValues>({
     <Formik {...props}>
       {(formikBag) => {
         (formikBag as any).validationSchema = props.validationSchema;
+
+        if (formikBag.errors) {
+          console.log('Form errors', formikBag.errors);
+        }
+
         return (
           <Form>
             <AutoSaveAction debounceMs={delayMs} />

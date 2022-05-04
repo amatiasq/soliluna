@@ -1,8 +1,7 @@
 import * as yup from 'yup';
-import { RequiredIngredient } from '../components-smart/RequiredIngredientList';
-import { RequiredRecipe } from '../components-smart/RequiredRecipes';
+import { IngredientUsage, ingredientUsageSchema } from './IngredientUsage';
 import { Multipliers } from './Multipliers';
-import { RecipeUnit } from './RecipeUnit';
+import { RecipeUsage, recipeUsageSchema } from './RecipeUsage';
 
 export type CakeId = `snowflake CakeId`;
 
@@ -12,8 +11,8 @@ export interface Cake {
   pax: number;
   cost: number;
   multiplier: Multipliers;
-  recipes: RequiredRecipe[];
-  ingredients: RequiredIngredient[];
+  recipes: RecipeUsage[];
+  ingredients: IngredientUsage[];
 }
 
 export const cakeSchema = yup.object().shape({
@@ -21,19 +20,6 @@ export const cakeSchema = yup.object().shape({
   pax: yup.number().required(),
   cost: yup.number().required(),
   multiplier: yup.number().oneOf(Multipliers).required(),
-  recipes: yup
-    .array()
-    .of(
-      yup
-        .object()
-        .shape({
-          id: yup.string().required(),
-          name: yup.string().required(),
-          amount: yup.number().required(),
-          unit: yup.string().oneOf(RecipeUnit),
-          cost: yup.number().required(),
-        })
-        .required()
-    )
-    .required(),
+  recipes: yup.array().of(recipeUsageSchema.required()).required(),
+  ingredients: yup.array().of(ingredientUsageSchema.required()).required(),
 });

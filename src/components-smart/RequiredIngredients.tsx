@@ -5,7 +5,6 @@ import {
   InputGroup,
   InputRightAddon,
   InputRightElement,
-  NumberInput,
 } from '@chakra-ui/react';
 import React from 'react';
 import { FaTimes } from 'react-icons/fa';
@@ -19,21 +18,13 @@ import {
   Ingredient,
   IngredientId,
 } from '../model/Ingredient';
-import { ingredientToRecipe } from '../model/Recipe';
-import { getConversionsFor, Unit } from '../model/Unit';
-
-export interface RequiredIngredient {
-  id: IngredientId;
-  name: string;
-  cost: number;
-  amount: number;
-  unit: Unit;
-}
+import { ingredientToUsage, IngredientUsage } from '../model/IngredientUsage';
+import { getConversionsFor, smallestUnit } from '../model/Unit';
 
 export interface RequiredIngredientsProps {}
 
 const IngredientControl = bindControl<
-  RequiredIngredient,
+  IngredientUsage,
   `ingredients.${number}.`
 >();
 
@@ -51,11 +42,11 @@ export function RequiredIngredients({}: RequiredIngredientsProps) {
   const [defaultIngredient] = data;
 
   return (
-    <FormList<RequiredIngredient>
+    <FormList<IngredientUsage>
       name="ingredients"
       label="Ingredientes"
       addLabel="Añadir ingrediente"
-      addItem={() => ingredientToRecipe(defaultIngredient)}
+      addItem={() => ingredientToUsage(defaultIngredient)}
     >
       {({ index, item, remove }) => {
         const ingredient = getIngredient(item.id);
@@ -69,7 +60,7 @@ export function RequiredIngredients({}: RequiredIngredientsProps) {
 
         if (item.name !== ingredient.name) {
           item.name = ingredient.name;
-          item.unit = ingredient.pkgUnit;
+          item.unit = smallestUnit(ingredient.pkgUnit);
         }
 
         item.cost = calculateIngredientPrice(
@@ -90,7 +81,7 @@ export function RequiredIngredients({}: RequiredIngredientsProps) {
             <InputGroup width="25rem">
               <IngredientControl
                 name={`ingredients.${index}.amount`}
-                as={NumberInput}
+                as={Input}
               />
               <InputRightElement width="4rem">
                 <IngredientControl

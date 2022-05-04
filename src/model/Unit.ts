@@ -34,3 +34,8 @@ export function convert(amount: number, source: Unit, target: Unit) {
     throw error;
   }
 }
+
+export function smallestUnit(unit: Unit) {
+  const result = getConversionsFor(unit);
+  return result.pop()!;
+}
