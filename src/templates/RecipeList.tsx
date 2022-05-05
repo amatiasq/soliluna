@@ -1,12 +1,14 @@
-import { LinkBox, Tag } from '@chakra-ui/react';
+import { LinkBox } from '@chakra-ui/react';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loading } from '../components/Loading';
+import { NiceTag } from '../components/NiceTag';
 import { useFireList } from '../hooks/useFireList';
 import { SilList } from '../layout/SilList';
 import { SilListItem } from '../layout/SilListItem';
 import { Recipe } from '../model/Recipe';
 import { RecipeUnit } from '../model/RecipeUnit';
+import { printUnit } from '../model/Unit';
 
 export function RecipeList() {
   const navigate = useNavigate();
@@ -40,8 +42,10 @@ export function RecipeList() {
             tag={`${x.amount} ${x.unit}`}
             url={`/recetas/${x.id}`}
           >
-            {x.ingredients.map((x, i) => (
-              <Tag key={i}>{x.name}</Tag>
+            {x.ingredients.map((y) => (
+              <NiceTag key={y.id} tooltip={printUnit(y.amount, y.unit)}>
+                {y.name}
+              </NiceTag>
             ))}
           </SilListItem>
         </LinkBox>

@@ -58,6 +58,7 @@ export function FormList<T>({
                   title={addLabel}
                   aria-label={addLabel}
                   icon={<Icon as={FaPlus} />}
+                  colorScheme="green"
                   onClick={async () => push(await addItem())}
                 />
               </Grid>

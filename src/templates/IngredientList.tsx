@@ -24,10 +24,17 @@ export function IngredientList() {
         </Heading>
 
         <IconButton
+          title="Añadir ingrediente"
           aria-label="Añadir ingrediente"
           icon={<Icon as={FaPlus} />}
+          colorScheme="green"
           onClick={() =>
-            add({ name: '', pkgSize: 1, pkgUnit: Unit[0], pkgPrice: 1 })
+            add({
+              name: '',
+              // pkgSize: undefined as any,
+              pkgUnit: Unit[0],
+              // pkgPrice: undefined as any,
+            } as any)
           }
         />
       </HStack>

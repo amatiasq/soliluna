@@ -55,7 +55,7 @@ export function App() {
     <Firebase config={firebaseConfig}>
       <ChakraProvider resetCSS>
         <Header />
-        <Container marginBottom="var(--chakra-space-16)">
+        <Container marginBottom="var(--chakra-space-16)" maxW="45rem">
           <VStack gap="var(--chakra-space-2)" align="stretch">
             <Outlet />
           </VStack>

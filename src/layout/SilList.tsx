@@ -28,8 +28,10 @@ export function SilList({
           {title}
         </Heading>
         <IconButton
+          title={addLabel}
           aria-label={addLabel}
           icon={<Icon as={FaPlus} />}
+          colorScheme="green"
           onClick={add}
         />
       </HStack>

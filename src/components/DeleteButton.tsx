@@ -45,6 +45,7 @@ export function DeleteButton({
         title={label}
         aria-label={label}
         icon={<FaTimes />}
+        colorScheme="red"
         onClick={showModal ? onOpen : onConfirm}
       />
 
