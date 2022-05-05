@@ -11,6 +11,7 @@ import { DeleteButton } from '../components/DeleteButton';
 import { Dropdown } from '../components/Dropdown';
 import { FormList } from '../components/FormList';
 import { Loading } from '../components/Loading';
+import { NumberInput } from '../components/NumberInput';
 import { useFireList } from '../hooks/useFireList';
 import {
   calculateIngredientPrice,
@@ -100,7 +101,7 @@ export function RequiredIngredients({ gridArea }: RequiredIngredientsProps) {
             <InputGroup gridArea="quantity">
               <IngredientControl
                 name={`ingredients.${index}.amount`}
-                as={Input}
+                as={NumberInput}
               />
               <InputRightElement width="4rem">
                 <IngredientControl

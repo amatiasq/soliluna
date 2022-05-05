@@ -14,6 +14,7 @@ import { DeleteButton } from '../components/DeleteButton';
 import { Dropdown } from '../components/Dropdown';
 import { FormList } from '../components/FormList';
 import { Loading } from '../components/Loading';
+import { NumberInput } from '../components/NumberInput';
 import { useFireList } from '../hooks/useFireList';
 import { Recipe, RecipeId } from '../model/Recipe';
 import { RecipeUsage } from '../model/RecipeUsage';
@@ -67,7 +68,7 @@ export function RequiredRecipes({ gridArea, pax }: RequiredRecipesProps) {
 
         const isPax = item.unit === 'PAX';
 
-        if (item.unit === 'PAX') {
+        if (isPax) {
           item.amount = pax;
         }
 
@@ -104,9 +105,8 @@ export function RequiredRecipes({ gridArea, pax }: RequiredRecipesProps) {
             <InputGroup gridArea="quantity">
               <RecipeControl
                 name={`recipes.${index}.amount`}
-                as={Input}
+                as={NumberInput}
                 isReadOnly={isPax}
-                autoFocus={changed && !isPax}
               />
               <InputRightElement width="4rem">
                 <Input value={item.unit} isReadOnly />
