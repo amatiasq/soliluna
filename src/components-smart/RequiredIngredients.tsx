@@ -1,5 +1,5 @@
 import {
-  HStack,
+  Grid,
   IconButton,
   Input,
   InputGroup,
@@ -70,7 +70,11 @@ export function RequiredIngredients({}: RequiredIngredientsProps) {
         );
 
         return (
-          <HStack key={index}>
+          <Grid
+            key={index}
+            templateColumns="1fr 8rem 7rem auto"
+            gap="var(--chakra-space-2)"
+          >
             <IngredientControl
               name={`ingredients.${index}.id`}
               as={Dropdown}
@@ -78,7 +82,7 @@ export function RequiredIngredients({}: RequiredIngredientsProps) {
               autoFocus
             />
 
-            <InputGroup width="25rem">
+            <InputGroup>
               <IngredientControl
                 name={`ingredients.${index}.amount`}
                 as={Input}
@@ -104,7 +108,7 @@ export function RequiredIngredients({}: RequiredIngredientsProps) {
               icon={<FaTimes />}
               onClick={remove}
             />
-          </HStack>
+          </Grid>
         );
       }}
     </FormList>

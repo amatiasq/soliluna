@@ -1,12 +1,14 @@
 import {
   ChakraProvider,
   Container,
+  Grid,
   Heading,
-  HStack,
+  Text,
+  useColorMode,
   VStack,
 } from '@chakra-ui/react';
 import { FirebaseOptions } from 'firebase/app';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Firebase } from '../components/Firebase';
 import { Link } from '../components/Link';
@@ -21,25 +23,40 @@ if (!stringConfig) {
 const firebaseConfig = JSON.parse(stringConfig) as FirebaseOptions;
 
 function Header() {
+  const { colorMode, toggleColorMode } = useColorMode();
+
+  useEffect(() => {
+    if (colorMode !== 'dark') {
+      toggleColorMode();
+    }
+  }, [colorMode]);
+
   return (
-    <HStack as="nav" spacing={4} alignItems="center" marginBottom={8}>
+    <Grid templateColumns="auto 1fr" alignItems="baseline" marginBottom={8}>
       <Heading as="h1">Soliluna</Heading>
-      {pages.map((x) => (
-        <Link key={x.path} to={x.path}>
-          {x.title}
-        </Link>
-      ))}
-    </HStack>
+      <Grid
+        as="nav"
+        justifyContent="center"
+        templateColumns="repeat(3, auto)"
+        gap={['var(--chakra-space-2)', 'var(--chakra-space-8)']}
+      >
+        {pages.map((x) => (
+          <Link key={x.path} to={x.path}>
+            <Text textAlign="center">{x.title}</Text>
+          </Link>
+        ))}
+      </Grid>
+    </Grid>
   );
 }
 
 export function App() {
   return (
     <Firebase config={firebaseConfig}>
-      <ChakraProvider>
+      <ChakraProvider resetCSS>
         <Header />
-        <Container>
-          <VStack gap={3} align="stretch">
+        <Container marginBottom="var(--chakra-space-16)">
+          <VStack gap="var(--chakra-space-2)" align="stretch">
             <Outlet />
           </VStack>
         </Container>

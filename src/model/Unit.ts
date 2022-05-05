@@ -46,13 +46,15 @@ export function largestUnit(unit: Unit) {
 }
 
 export function printUnit(value: number, unit: Unit) {
-  if ((value < 1 && unit === 'kg') || unit === 'l') {
+  if (value < 1 && (unit === 'kg' || unit === 'l')) {
     value = value * 1000;
     unit = smallestUnit(unit);
-  } else if ((value > 1000 && unit === 'g') || unit === 'ml') {
+  } else if (value > 1000 && (unit === 'g' || unit === 'ml')) {
     value = value / 1000;
     unit = largestUnit(unit);
   }
 
-  return `${value.toLocaleString()}${unit}`;
+  return `${value.toLocaleString(undefined, {
+    maximumSignificantDigits: 3,
+  })} ${unit}`;
 }

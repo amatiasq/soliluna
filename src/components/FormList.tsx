@@ -2,6 +2,8 @@ import {
   FormControl,
   FormHelperText,
   FormLabel,
+  Grid,
+  Heading,
   Icon,
   IconButton,
   Stack,
@@ -14,7 +16,7 @@ import { FaPlus } from 'react-icons/fa';
 
 export interface FormListProps<T> extends Omit<StackProps, 'children'> {
   name: string;
-  label?: string;
+  label: string;
   info?: string;
   addLabel: string;
   addItem: () => T | Promise<T>;
@@ -37,17 +39,30 @@ export function FormList<T>({
   const { value } = form.getFieldMeta<T[]>(name);
 
   return (
-    <>
-      {label || info ? (
-        <FormControl>
-          {label ? <FormLabel htmlFor={id}>{label}</FormLabel> : null}
-          {info ? <FormHelperText>{info}</FormHelperText> : null}
-        </FormControl>
-      ) : null}
+    <FieldArray name={name}>
+      {({ push, remove }) => (
+        <>
+          <FormControl paddingTop={16} paddingBottom={3}>
+            <Grid templateColumns="1fr auto">
+              <FormLabel htmlFor={id}>
+                <Heading as="h3" fontSize="2xl">
+                  {label}
+                </Heading>
+              </FormLabel>
 
-      <FieldArray name={name}>
-        {({ push, remove }) => (
-          <Stack direction="column" align="baseline" {...stackProps}>
+              <IconButton
+                id={id}
+                title={addLabel}
+                aria-label={addLabel}
+                icon={<Icon as={FaPlus} />}
+                onClick={async () => push(await addItem())}
+              />
+            </Grid>
+
+            {info ? <FormHelperText>{info}</FormHelperText> : null}
+          </FormControl>
+
+          <Stack direction="column" align="stretch" {...stackProps}>
             {value.map((item, index) => {
               const handleRemove = onRemove
                 ? () => {
@@ -58,18 +73,10 @@ export function FormList<T>({
 
               return children({ index, item, remove: handleRemove });
             })}
-
-            <IconButton
-              id={id}
-              title={addLabel}
-              aria-label={addLabel}
-              icon={<Icon as={FaPlus} />}
-              onClick={async () => push(await addItem())}
-            />
           </Stack>
-        )}
-      </FieldArray>
-    </>
+        </>
+      )}
+    </FieldArray>
   );
 }
 

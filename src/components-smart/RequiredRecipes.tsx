@@ -1,14 +1,13 @@
 import {
-  HStack,
+  Checkbox,
+  Grid,
+  GridItem,
   IconButton,
   Input,
   InputGroup,
   InputRightAddon,
   InputRightElement,
-  List,
-  ListItem,
   Text,
-  VStack,
 } from '@chakra-ui/react';
 import React from 'react';
 import { FaTimes } from 'react-icons/fa';
@@ -46,7 +45,6 @@ export function RequiredRecipes({ pax }: RequiredRecipesProps) {
       label="Recetas"
       addLabel="Añadir receta"
       addItem={() => defaultRecipe}
-      align="stretch"
     >
       {({ index, item, remove }) => {
         const recipe = getRecipe(item.id);
@@ -71,68 +69,60 @@ export function RequiredRecipes({ pax }: RequiredRecipesProps) {
           : 0;
 
         return (
-          <VStack key={index}>
-            <HStack key={index}>
+          <Grid
+            key={index}
+            templateColumns="1fr 8rem 7rem auto"
+            gap="var(--chakra-space-2)"
+          >
+            <RecipeControl
+              name={`recipes.${index}.id`}
+              as={Dropdown}
+              options={names}
+              autoFocus
+            />
+
+            <InputGroup>
               <RecipeControl
-                name={`recipes.${index}.id`}
-                as={Dropdown}
-                options={names}
-                autoFocus
+                name={`recipes.${index}.amount`}
+                as={Input}
+                isReadOnly={item.unit === 'PAX'}
               />
+              <InputRightElement width="4rem">
+                <Input value={item.unit} isReadOnly />
+              </InputRightElement>
+            </InputGroup>
 
-              <InputGroup width="25rem">
-                <RecipeControl
-                  name={`recipes.${index}.amount`}
-                  as={Input}
-                  isReadOnly={item.unit === 'PAX'}
-                />
-                <InputRightElement width="4rem">
-                  <Input value={item.unit} isReadOnly />
-                </InputRightElement>
-              </InputGroup>
+            <InputGroup>
+              <Input value={item.cost.toFixed(2)} isReadOnly />
+              <InputRightAddon>€</InputRightAddon>
+            </InputGroup>
 
-              <InputGroup>
-                <Input value={item.cost.toFixed(2)} isReadOnly />
-                <InputRightAddon>€</InputRightAddon>
-              </InputGroup>
+            <IconButton
+              title="Quitar ingrediente"
+              aria-label="Quitar ingrediente"
+              icon={<FaTimes />}
+              onClick={remove}
+            />
 
-              <IconButton
-                title="Quitar ingrediente"
-                aria-label="Quitar ingrediente"
-                icon={<FaTimes />}
-                onClick={remove}
-              />
-            </HStack>
-
-            <List>
+            <GridItem colSpan={4}>
               {recipe.ingredients.map((ingredient) => (
-                <ListItem key={ingredient.id}>
+                <Grid
+                  key={ingredient.id}
+                  templateColumns="1fr auto 1fr"
+                  gap="var(--chakra-space-2)"
+                >
                   <Text textAlign="right">
                     {printUnit(
                       (ingredient.amount / recipe.amount) * item.amount,
                       ingredient.unit
                     )}
                   </Text>
+                  <Checkbox checked={false} />
                   <Text>{ingredient.name}</Text>
-                </ListItem>
-
-                // <HStack key={index} paddingInlineStart="4rem">
-                //   <Input value={ingredient.name} readOnly />
-                //   <InputGroup width="25rem">
-                //     <Input
-                //       value={round(
-                //         (ingredient.amount / recipe.amount) * item.amount
-                //       )}
-                //       readOnly
-                //     />
-                //     <InputRightElement width="4rem">
-                //       <Input value={ingredient.unit} readOnly />
-                //     </InputRightElement>
-                //   </InputGroup>
-                // </HStack>
+                </Grid>
               ))}
-            </List>
-          </VStack>
+            </GridItem>
+          </Grid>
         );
       }}
     </FormList>

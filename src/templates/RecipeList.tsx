@@ -1,19 +1,10 @@
-import {
-  Heading,
-  HStack,
-  Icon,
-  IconButton,
-  LinkBox,
-  StackDivider,
-  Tag,
-  VStack,
-} from '@chakra-ui/react';
+import { LinkBox, Tag } from '@chakra-ui/react';
 import React from 'react';
-import { FaPlus, FaTimes } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import { LinkOverlay } from '../components/Link';
 import { Loading } from '../components/Loading';
 import { useFireList } from '../hooks/useFireList';
+import { SilList } from '../layout/SilList';
+import { SilListItem } from '../layout/SilListItem';
 import { Recipe } from '../model/Recipe';
 import { RecipeUnit } from '../model/RecipeUnit';
 
@@ -29,7 +20,7 @@ export function RecipeList() {
 
   async function create() {
     const item = await add({
-      name: 'Nueva receta',
+      name: '',
       cost: 0,
       amount: 8,
       unit: RecipeUnit[0],
@@ -39,63 +30,22 @@ export function RecipeList() {
   }
 
   return (
-    <VStack
-      align="stretch"
-      gap={3}
-      divider={<StackDivider borderColor="gray.200" />}
-    >
-      <HStack>
-        <Heading as="h1" flex={1}>
-          Recetas
-        </Heading>
-        <IconButton
-          aria-label="Añadir receta"
-          icon={<Icon as={FaPlus} />}
-          onClick={create}
-        />
-      </HStack>
-
+    <SilList title="Recetas" addLabel="Añadir receta" add={create}>
       {data.map((x) => (
         <LinkBox key={x.id}>
-          <RecipleListView data={x} remove={() => remove(x)} />
+          <SilListItem
+            name={x.name || '(sin nombre)'}
+            remove={() => remove(x)}
+            removeLabel="Borrar receta"
+            tag={`${x.amount} ${x.unit}`}
+            url={`/recetas/${x.id}`}
+          >
+            {x.ingredients.map((x, i) => (
+              <Tag key={i}>{x.name}</Tag>
+            ))}
+          </SilListItem>
         </LinkBox>
       ))}
-    </VStack>
-  );
-}
-
-function RecipleListView({
-  data,
-  remove,
-}: {
-  data: Recipe;
-  remove: () => unknown;
-}) {
-  return (
-    <VStack align="stretch">
-      <HStack justify="space-between">
-        <Heading as="h3" fontSize="1.5rem">
-          <LinkOverlay to={`/recetas/${data.id}`}>{data.name}</LinkOverlay>
-        </Heading>
-
-        <HStack>
-          <Tag>
-            {data.amount} {data.unit}
-          </Tag>
-
-          <IconButton
-            title="Borrar receta"
-            aria-label="Borrar receta"
-            icon={<FaTimes />}
-            onClick={remove}
-          />
-        </HStack>
-      </HStack>
-      <HStack>
-        {data.ingredients.map((x, i) => (
-          <Tag key={i}>{x.name}</Tag>
-        ))}
-      </HStack>
-    </VStack>
+    </SilList>
   );
 }

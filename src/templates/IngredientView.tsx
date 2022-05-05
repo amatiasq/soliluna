@@ -1,5 +1,6 @@
 import {
-  HStack,
+  Grid,
+  GridItem,
   IconButton,
   InputGroup,
   InputRightAddon,
@@ -20,13 +21,9 @@ import {
   ingredientSchema,
 } from '../model/Ingredient';
 import { Unit } from '../model/Unit';
+import { capitalise } from '../util/capitalise';
 
 const IngredientControl = bindControl<Ingredient>();
-
-function capitalise(x: string) {
-  const trimmed = x.trim();
-  return `${trimmed[0].toUpperCase()}${trimmed.substring(1)}`;
-}
 
 export interface IngredientViewProps {
   id: IngredientId;
@@ -43,13 +40,7 @@ export function IngredientView({
 }: IngredientViewProps) {
   const { isLoading, data, set } = useFire<Ingredient>('ingredientes', id);
   const save = useCallback(
-    (values: Ingredient) => {
-      console.log('[SAVE]', values.name);
-      return set({
-        ...values,
-        name: capitalise(values.name),
-      });
-    },
+    (values: Ingredient) => set({ ...values, name: capitalise(values.name) }),
     [set]
   );
 
@@ -62,30 +53,42 @@ export function IngredientView({
       delayMs={delayMs}
       onSubmit={save}
     >
-      <HStack gap={3}>
-        <HStack gap={gap}>
-          <IngredientControl name="name" />
-          <InputGroup>
-            <IngredientControl name="pkgSize" as={NumberInput} />
-            <InputRightElement width="4rem">
-              <IngredientControl name="pkgUnit" as={Dropdown} options={Unit} />
-            </InputRightElement>
-          </InputGroup>
-          <InputGroup>
-            <IngredientControl name="pkgPrice" as={NumberInput} />
-            <InputRightAddon>€</InputRightAddon>
-          </InputGroup>
-        </HStack>
+      <Grid
+        alignItems="center"
+        gridTemplate={[
+          ` "name name name name"
+            "size price save remove"
+            / 8fr 7fr 2rem auto`,
+          '"name size price save remove" / 1fr 8rem 7rem 2rem auto',
+        ]}
+        gap="var(--chakra-space-2)"
+      >
+        <IngredientControl name="name" gridArea="name" />
 
-        <AutoSaveFormStatus />
+        <InputGroup gridArea="size">
+          <IngredientControl name="pkgSize" as={NumberInput} />
+          <InputRightElement width="4rem">
+            <IngredientControl name="pkgUnit" as={Dropdown} options={Unit} />
+          </InputRightElement>
+        </InputGroup>
+
+        <InputGroup gridArea="price">
+          <IngredientControl name="pkgPrice" as={NumberInput} />
+          <InputRightAddon>€</InputRightAddon>
+        </InputGroup>
+
+        <GridItem gridArea="save" justifySelf="center">
+          <AutoSaveFormStatus />
+        </GridItem>
 
         <IconButton
+          gridArea="remove"
           title="Borrar ingrediente"
           aria-label="Borrar ingrediente"
           icon={<FaTimes />}
           onClick={remove}
         />
-      </HStack>
+      </Grid>
     </AutoSaveForm>
   );
 }

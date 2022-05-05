@@ -1,19 +1,10 @@
-import {
-  Heading,
-  HStack,
-  Icon,
-  IconButton,
-  LinkBox,
-  StackDivider,
-  Tag,
-  VStack,
-} from '@chakra-ui/react';
+import { LinkBox, Tag } from '@chakra-ui/react';
 import React from 'react';
-import { FaPlus, FaTimes } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import { LinkOverlay } from '../components/Link';
 import { Loading } from '../components/Loading';
 import { useFireList } from '../hooks/useFireList';
+import { SilList } from '../layout/SilList';
+import { SilListItem } from '../layout/SilListItem';
 import { Cake } from '../model/Cake';
 
 export function CakeList() {
@@ -29,65 +20,36 @@ export function CakeList() {
   async function create() {
     const item = await add({
       name: 'Nuevo pastel',
-      pax: 8,
+      pax: '' as any,
       cost: 0,
       multiplier: 4,
       recipes: [],
+      ingredients: [],
     });
 
     navigate(`/pasteles/${item.id}`);
   }
 
   return (
-    <VStack
-      align="stretch"
-      gap={3}
-      divider={<StackDivider borderColor="gray.200" />}
-    >
-      <HStack>
-        <Heading as="h1" flex={1}>
-          Pasteles
-        </Heading>
-        <IconButton
-          aria-label="Añadir pastel"
-          icon={<Icon as={FaPlus} />}
-          onClick={create}
-        />
-      </HStack>
-
+    <SilList title="Pasteles" addLabel="Añadir pastel" add={create}>
       {data.map((x) => (
         <LinkBox key={x.id}>
-          <CakeListView data={x} remove={() => remove(x)} />
+          <SilListItem
+            name={x.name || '(sin nombre)'}
+            remove={() => remove(x)}
+            removeLabel="Borrar pastel"
+            tag={`${x.pax || '0'} PAX`}
+            url={`/pasteles/${x.id}`}
+          >
+            {x.recipes.map((y) => (
+              <Tag key={y.id}>{y.name}</Tag>
+            ))}
+            {x.ingredients.map((y) => (
+              <Tag key={y.id}>{y.name}</Tag>
+            ))}
+          </SilListItem>
         </LinkBox>
       ))}
-    </VStack>
-  );
-}
-
-function CakeListView({ data, remove }: { data: Cake; remove: () => unknown }) {
-  return (
-    <VStack align="stretch">
-      <HStack justify="space-between">
-        <Heading as="h3" fontSize="1.5rem">
-          <LinkOverlay to={`/pasteles/${data.id}`}>{data.name}</LinkOverlay>
-        </Heading>
-
-        <HStack>
-          <Tag>{data.pax} pax</Tag>
-
-          <IconButton
-            title="Borrar pastel"
-            aria-label="Borrar pastel"
-            icon={<FaTimes />}
-            onClick={remove}
-          />
-        </HStack>
-      </HStack>
-      <HStack>
-        {data.recipes.map((x, i) => (
-          <Tag key={i}>{x.name}</Tag>
-        ))}
-      </HStack>
-    </VStack>
+    </SilList>
   );
 }
