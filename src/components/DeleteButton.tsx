@@ -7,6 +7,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Spacer,
   useDisclosure,
 } from '@chakra-ui/react';
 import React, { useCallback } from 'react';
@@ -54,14 +55,15 @@ export function DeleteButton({
           <ModalCloseButton />
 
           <ModalFooter>
-            <Button colorScheme="red" mr={3} onClick={confirm}>
-              Borrar
-            </Button>
             <Button colorScheme="yellow" mr={3} onClick={yesAll}>
               Si a todo
             </Button>
+            <Spacer />
             <Button variant="ghost" onClick={onClose}>
               Cancelar
+            </Button>
+            <Button colorScheme="red" mr={3} onClick={confirm}>
+              Borrar
             </Button>
           </ModalFooter>
         </ModalContent>
