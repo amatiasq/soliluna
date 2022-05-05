@@ -71,12 +71,6 @@ export function RequiredRecipes({ gridArea, pax }: RequiredRecipesProps) {
           item.unit = recipe.unit;
         }
 
-        const isPax = item.unit === 'PAX';
-
-        if (isPax) {
-          item.amount = pax;
-        }
-
         recipe.cost = calculateIngredientsCost(
           recipe.ingredients,
           ingredients.data
@@ -114,7 +108,6 @@ export function RequiredRecipes({ gridArea, pax }: RequiredRecipesProps) {
               <RecipeControl
                 name={`recipes.${index}.amount`}
                 as={NumberInput}
-                isReadOnly={isPax}
               />
               <InputRightElement width="4rem">
                 <Input value={item.unit} isReadOnly />
