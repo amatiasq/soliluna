@@ -56,7 +56,7 @@ export function RecipeView() {
 
           return (
             <VStack align="stretch">
-              <RecipeControl name="name" label="Nombre" />
+              <RecipeControl name="name" label="Nombre" autoFocus />
 
               <Grid templateColumns="1fr 1fr" gap="var(--chakra-space-2)">
                 <FormControl>

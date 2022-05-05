@@ -16,7 +16,7 @@ export interface FormControlProps<T> extends Omit<InputProps, 'name'> {
 
 export function bindFormControl<T>() {
   return forwardRef<FormControlProps<T>, 'input'>(
-    ({ name, label, isRequired, children, ...rest }, ref) => {
+    ({ name, label, isRequired, gridArea, children, ...rest }, ref) => {
       const id = useId();
       const [field, meta] = useField(name as string);
 
@@ -24,6 +24,7 @@ export function bindFormControl<T>() {
         <ChakraFormControl
           isInvalid={Boolean(meta.error && meta.touched)}
           isRequired={isRequired}
+          gridArea={gridArea}
         >
           <FormLabel htmlFor={id}>{label}</FormLabel>
           <Input {...rest} {...field} ref={ref} name={name as string} id={id} />

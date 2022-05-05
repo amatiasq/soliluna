@@ -1,14 +1,13 @@
 import {
   Grid,
-  IconButton,
   Input,
   InputGroup,
   InputRightAddon,
   InputRightElement,
 } from '@chakra-ui/react';
 import React from 'react';
-import { FaTimes } from 'react-icons/fa';
 import { bindControl } from '../components/Control';
+import { DeleteButton } from '../components/DeleteButton';
 import { Dropdown } from '../components/Dropdown';
 import { FormList } from '../components/FormList';
 import { Loading } from '../components/Loading';
@@ -20,15 +19,18 @@ import {
 } from '../model/Ingredient';
 import { ingredientToUsage, IngredientUsage } from '../model/IngredientUsage';
 import { getConversionsFor, smallestUnit } from '../model/Unit';
+import { focusNextInput } from '../util/focusNextInput';
 
-export interface RequiredIngredientsProps {}
+export interface RequiredIngredientsProps {
+  gridArea?: string;
+}
 
 const IngredientControl = bindControl<
   IngredientUsage,
   `ingredients.${number}.`
 >();
 
-export function RequiredIngredients({}: RequiredIngredientsProps) {
+export function RequiredIngredients({ gridArea }: RequiredIngredientsProps) {
   const { data, isLoading } = useFireList<Ingredient>('ingredientes', {
     orderBy: 'name',
   });
@@ -43,6 +45,8 @@ export function RequiredIngredients({}: RequiredIngredientsProps) {
 
   return (
     <FormList<IngredientUsage>
+      gridArea={gridArea}
+      gap={['var(--chakra-space-6)', 'var(--chakra-space-2)']}
       name="ingredients"
       label="Ingredientes"
       addLabel="Añadir ingrediente"
@@ -57,8 +61,9 @@ export function RequiredIngredients({}: RequiredIngredientsProps) {
         }
 
         const units = getConversionsFor(ingredient.pkgUnit);
+        const changed = item.name !== ingredient.name;
 
-        if (item.name !== ingredient.name) {
+        if (changed) {
           item.name = ingredient.name;
           item.unit = smallestUnit(ingredient.pkgUnit);
         }
@@ -72,17 +77,27 @@ export function RequiredIngredients({}: RequiredIngredientsProps) {
         return (
           <Grid
             key={index}
-            templateColumns="1fr 8rem 7rem auto"
             gap="var(--chakra-space-2)"
+            gridTemplate={[
+              `
+                "name name name"
+                "quantity cost remove"
+                / 8fr 7fr auto`,
+              `
+                "name quantity cost remove"
+                / 1fr 8rem 7rem auto
+              `,
+            ]}
           >
             <IngredientControl
+              gridArea="name"
               name={`ingredients.${index}.id`}
               as={Dropdown}
               options={names}
-              autoFocus
+              onChange={focusNextInput}
             />
 
-            <InputGroup>
+            <InputGroup gridArea="quantity">
               <IngredientControl
                 name={`ingredients.${index}.amount`}
                 as={Input}
@@ -97,16 +112,15 @@ export function RequiredIngredients({}: RequiredIngredientsProps) {
               </InputRightElement>
             </InputGroup>
 
-            <InputGroup>
+            <InputGroup gridArea="cost">
               <Input value={item.cost.toFixed(2)} isReadOnly />
               <InputRightAddon>€</InputRightAddon>
             </InputGroup>
 
-            <IconButton
-              title="Quitar ingrediente"
-              aria-label="Quitar ingrediente"
-              icon={<FaTimes />}
-              onClick={remove}
+            <DeleteButton
+              gridArea="remove"
+              label={`Quitar ${item.name}`}
+              onConfirm={remove}
             />
           </Grid>
         );

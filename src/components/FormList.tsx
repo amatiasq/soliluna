@@ -1,4 +1,5 @@
 import {
+  Box,
   FormControl,
   FormHelperText,
   FormLabel,
@@ -31,6 +32,7 @@ export function FormList<T>({
   addLabel,
   addItem,
   onRemove,
+  gridArea,
   children,
   ...stackProps
 }: FormListProps<T>) {
@@ -39,44 +41,46 @@ export function FormList<T>({
   const { value } = form.getFieldMeta<T[]>(name);
 
   return (
-    <FieldArray name={name}>
-      {({ push, remove }) => (
-        <>
-          <FormControl paddingTop={16} paddingBottom={3}>
-            <Grid templateColumns="1fr auto">
-              <FormLabel htmlFor={id}>
-                <Heading as="h3" fontSize="2xl">
-                  {label}
-                </Heading>
-              </FormLabel>
+    <Box gridArea={gridArea}>
+      <FieldArray name={name}>
+        {({ push, remove }) => (
+          <>
+            <FormControl paddingTop={16} paddingBottom={3}>
+              <Grid templateColumns="1fr auto">
+                <FormLabel htmlFor={id}>
+                  <Heading as="h3" fontSize="2xl">
+                    {label}
+                  </Heading>
+                </FormLabel>
 
-              <IconButton
-                id={id}
-                title={addLabel}
-                aria-label={addLabel}
-                icon={<Icon as={FaPlus} />}
-                onClick={async () => push(await addItem())}
-              />
-            </Grid>
+                <IconButton
+                  id={id}
+                  title={addLabel}
+                  aria-label={addLabel}
+                  icon={<Icon as={FaPlus} />}
+                  onClick={async () => push(await addItem())}
+                />
+              </Grid>
 
-            {info ? <FormHelperText>{info}</FormHelperText> : null}
-          </FormControl>
+              {info ? <FormHelperText>{info}</FormHelperText> : null}
+            </FormControl>
 
-          <Stack direction="column" align="stretch" {...stackProps}>
-            {value.map((item, index) => {
-              const handleRemove = onRemove
-                ? () => {
-                    onRemove(item, index);
-                    remove(index);
-                  }
-                : () => remove(index);
+            <Stack direction="column" align="stretch" {...stackProps}>
+              {value.map((item, index) => {
+                const handleRemove = onRemove
+                  ? () => {
+                      onRemove(item, index);
+                      remove(index);
+                    }
+                  : () => remove(index);
 
-              return children({ index, item, remove: handleRemove });
-            })}
-          </Stack>
-        </>
-      )}
-    </FieldArray>
+                return children({ index, item, remove: handleRemove });
+              })}
+            </Stack>
+          </>
+        )}
+      </FieldArray>
+    </Box>
   );
 }
 

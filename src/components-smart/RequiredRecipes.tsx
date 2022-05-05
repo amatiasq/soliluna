@@ -2,7 +2,6 @@ import {
   Checkbox,
   Grid,
   GridItem,
-  IconButton,
   Input,
   InputGroup,
   InputRightAddon,
@@ -10,8 +9,8 @@ import {
   Text,
 } from '@chakra-ui/react';
 import React from 'react';
-import { FaTimes } from 'react-icons/fa';
 import { bindControl } from '../components/Control';
+import { DeleteButton } from '../components/DeleteButton';
 import { Dropdown } from '../components/Dropdown';
 import { FormList } from '../components/FormList';
 import { Loading } from '../components/Loading';
@@ -19,14 +18,16 @@ import { useFireList } from '../hooks/useFireList';
 import { Recipe, RecipeId } from '../model/Recipe';
 import { RecipeUsage } from '../model/RecipeUsage';
 import { printUnit } from '../model/Unit';
+import { focusNextInput } from '../util/focusNextInput';
 
 export interface RequiredRecipesProps {
+  gridArea?: string;
   pax: number;
 }
 
 const RecipeControl = bindControl<RecipeUsage, `recipes.${number}.`>();
 
-export function RequiredRecipes({ pax }: RequiredRecipesProps) {
+export function RequiredRecipes({ gridArea, pax }: RequiredRecipesProps) {
   const { data, isLoading } = useFireList<Recipe>('recetas', {
     orderBy: 'name',
   });
@@ -41,6 +42,8 @@ export function RequiredRecipes({ pax }: RequiredRecipesProps) {
 
   return (
     <FormList<RecipeUsage>
+      gridArea={gridArea}
+      gap={['var(--chakra-space-6)', 'var(--chakra-space-2)']}
       name="recipes"
       label="Recetas"
       addLabel="Añadir receta"
@@ -54,11 +57,15 @@ export function RequiredRecipes({ pax }: RequiredRecipesProps) {
           return null;
         }
 
-        if (item.name !== recipe.name) {
+        const changed = item.name !== recipe.name;
+
+        if (changed) {
           item.name = recipe.name;
           item.amount = recipe.amount;
           item.unit = recipe.unit;
         }
+
+        const isPax = item.unit === 'PAX';
 
         if (item.unit === 'PAX') {
           item.amount = pax;
@@ -71,40 +78,53 @@ export function RequiredRecipes({ pax }: RequiredRecipesProps) {
         return (
           <Grid
             key={index}
-            templateColumns="1fr 8rem 7rem auto"
             gap="var(--chakra-space-2)"
+            gridTemplate={[
+              `
+                "name name name"
+                "quantity cost remove"
+                "ingredients ingredients ingredients"
+                / 8fr 7fr auto
+              `,
+              `
+                "name quantity cost remove"
+                "ingredients ingredients ingredients ingredients"
+                / 1fr 8rem 7rem auto
+              `,
+            ]}
           >
             <RecipeControl
+              gridArea="name"
               name={`recipes.${index}.id`}
               as={Dropdown}
               options={names}
-              autoFocus
+              onChange={focusNextInput}
             />
 
-            <InputGroup>
+            <InputGroup gridArea="quantity">
               <RecipeControl
                 name={`recipes.${index}.amount`}
                 as={Input}
-                isReadOnly={item.unit === 'PAX'}
+                isReadOnly={isPax}
+                autoFocus={changed && !isPax}
               />
               <InputRightElement width="4rem">
                 <Input value={item.unit} isReadOnly />
               </InputRightElement>
             </InputGroup>
 
-            <InputGroup>
+            <InputGroup gridArea="cost">
               <Input value={item.cost.toFixed(2)} isReadOnly />
               <InputRightAddon>€</InputRightAddon>
             </InputGroup>
 
-            <IconButton
-              title="Quitar ingrediente"
-              aria-label="Quitar ingrediente"
-              icon={<FaTimes />}
-              onClick={remove}
+            <DeleteButton
+              gridArea="remove"
+              label={`Quitar ${item.name}`}
+              onConfirm={remove}
             />
 
-            <GridItem colSpan={4}>
+            <GridItem gridArea="ingredients">
               {recipe.ingredients.map((ingredient) => (
                 <Grid
                   key={ingredient.id}

@@ -22,6 +22,7 @@ export function IngredientList() {
         <Heading as="h1" flex={1}>
           Ingredientes
         </Heading>
+
         <IconButton
           aria-label="Añadir ingrediente"
           icon={<Icon as={FaPlus} />}

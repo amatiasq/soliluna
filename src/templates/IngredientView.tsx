@@ -1,16 +1,15 @@
 import {
   Grid,
   GridItem,
-  IconButton,
   InputGroup,
   InputRightAddon,
   InputRightElement,
 } from '@chakra-ui/react';
 import React, { useCallback } from 'react';
-import { FaTimes } from 'react-icons/fa';
 import { AutoSaveForm } from '../components/AutoSaveForm';
 import { AutoSaveFormStatus } from '../components/AutoSaveFormStatus';
 import { bindControl } from '../components/Control';
+import { DeleteButton } from '../components/DeleteButton';
 import { Dropdown } from '../components/Dropdown';
 import { Loading } from '../components/Loading';
 import { NumberInput } from '../components/NumberInput';
@@ -81,12 +80,10 @@ export function IngredientView({
           <AutoSaveFormStatus />
         </GridItem>
 
-        <IconButton
+        <DeleteButton
           gridArea="remove"
-          title="Borrar ingrediente"
-          aria-label="Borrar ingrediente"
-          icon={<FaTimes />}
-          onClick={remove}
+          label="Borrar ingrediente"
+          onConfirm={remove}
         />
       </Grid>
     </AutoSaveForm>

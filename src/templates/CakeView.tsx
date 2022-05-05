@@ -7,7 +7,6 @@ import {
   InputGroup,
   InputLeftElement,
   InputRightAddon,
-  VStack,
 } from '@chakra-ui/react';
 import React, { useCallback } from 'react';
 import { useParams } from 'react-router-dom';
@@ -58,43 +57,71 @@ export function CakeView() {
             values.ingredients.reduce((sum, x) => sum + x.cost, 0);
 
           return (
-            <VStack align="stretch">
-              <CakeControl name="name" label="Nombre" />
+            <Grid
+              gap="var(--chakra-space-2)"
+              gridTemplate={[
+                `
+                "name"
+                "pax"
+                "cost"
+                "price"
+                "recipes"
+                "ingredients"
+                / 1fr
+              `,
+                `
+                  "name name name"
+                  "pax cost price"
+                  "recipes recipes recipes"
+                  "ingredients ingredients ingredients"
+                  / 1fr 2fr 2fr
+                `,
+              ]}
+            >
+              <CakeControl
+                gridArea="name"
+                name="name"
+                label="Nombre"
+                autoFocus
+              />
 
-              <Grid templateColumns="1fr 1fr 1fr" gap="var(--chakra-space-2)">
-                <CakeControl name="pax" label="PAX" as={NumberInput} />
+              <CakeControl
+                gridArea="pax"
+                name="pax"
+                label="PAX"
+                as={NumberInput}
+              />
 
-                <FormControl>
-                  <FormLabel>Coste</FormLabel>
-                  <InputGroup>
-                    <Input value={values.cost.toFixed(2)} isReadOnly />
-                    <InputRightAddon>€</InputRightAddon>
-                  </InputGroup>
-                </FormControl>
+              <FormControl gridArea="cost">
+                <FormLabel>Coste</FormLabel>
+                <InputGroup>
+                  <Input value={values.cost.toFixed(2)} isReadOnly />
+                  <InputRightAddon>€</InputRightAddon>
+                </InputGroup>
+              </FormControl>
 
-                <FormControl>
-                  <FormLabel>Precio</FormLabel>
-                  <InputGroup>
-                    <InputLeftElement width="4rem">
-                      <CakeSimpleControl
-                        name="multiplier"
-                        as={Dropdown}
-                        options={multiplierOptions}
-                      />
-                    </InputLeftElement>
-                    <Input
-                      value={(values.cost * values.multiplier).toFixed(2)}
-                      isReadOnly
-                      paddingLeft="6rem"
+              <FormControl gridArea="price">
+                <FormLabel>Precio</FormLabel>
+                <InputGroup>
+                  <InputLeftElement width="4rem">
+                    <CakeSimpleControl
+                      name="multiplier"
+                      as={Dropdown}
+                      options={multiplierOptions}
                     />
-                    <InputRightAddon>€</InputRightAddon>
-                  </InputGroup>
-                </FormControl>
-              </Grid>
+                  </InputLeftElement>
+                  <Input
+                    value={(values.cost * values.multiplier).toFixed(2)}
+                    isReadOnly
+                    paddingLeft="6rem"
+                  />
+                  <InputRightAddon>€</InputRightAddon>
+                </InputGroup>
+              </FormControl>
 
-              <RequiredRecipes pax={values.pax} />
-              <RequiredIngredients />
-            </VStack>
+              <RequiredRecipes gridArea="recipes" pax={values.pax} />
+              <RequiredIngredients gridArea="ingredients" />
+            </Grid>
           );
         }}
       </AutoSaveForm>

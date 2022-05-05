@@ -1,13 +1,6 @@
-import {
-  Flex,
-  Grid,
-  GridItem,
-  Heading,
-  IconButton,
-  Tag,
-} from '@chakra-ui/react';
+import { Flex, Grid, GridItem, Heading, Tag } from '@chakra-ui/react';
 import React, { PropsWithChildren } from 'react';
-import { FaTimes } from 'react-icons/fa';
+import { DeleteButton } from '../components/DeleteButton';
 import { LinkOverlay } from '../components/Link';
 
 interface SilListItemProps {
@@ -38,12 +31,7 @@ export function SilListItem({
 
       <Tag>{tag}</Tag>
 
-      <IconButton
-        title={removeLabel}
-        aria-label={removeLabel}
-        icon={<FaTimes />}
-        onClick={remove}
-      />
+      <DeleteButton label={removeLabel} onConfirm={remove} />
 
       <GridItem colSpan={3}>
         <Flex whiteSpace="nowrap" flexWrap="wrap" gap="var(--chakra-space-2)">
