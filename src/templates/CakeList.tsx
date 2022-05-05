@@ -37,7 +37,7 @@ export function CakeList() {
           <SilListItem
             name={x.name || '(sin nombre)'}
             remove={() => remove(x)}
-            removeLabel="Borrar pastel"
+            removeLabel={`Borrar pastel ${x.name || ''}`}
             tag={`${x.pax || '0'} PAX`}
             url={`/pasteles/${x.id}`}
           >

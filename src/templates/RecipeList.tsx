@@ -36,7 +36,7 @@ export function RecipeList() {
           <SilListItem
             name={x.name || '(sin nombre)'}
             remove={() => remove(x)}
-            removeLabel="Borrar receta"
+            removeLabel={`Borrar receta ${x.name || ''}`}
             tag={`${x.amount} ${x.unit}`}
             url={`/recetas/${x.id}`}
           >

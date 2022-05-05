@@ -48,7 +48,7 @@ export function AutoSaveForm<Values extends FormikValues = FormikValues>({
       {(formikBag) => {
         (formikBag as any).validationSchema = props.validationSchema;
 
-        if (formikBag.errors) {
+        if (formikBag.errors && Object.keys(formikBag.errors).length) {
           console.log('Form errors', formikBag.errors);
         }
 

@@ -13,6 +13,7 @@ import React, { useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { RequiredIngredients } from '../components-smart/RequiredIngredients';
 import { AutoSaveForm } from '../components/AutoSaveForm';
+import { AutoSaveFormStatus } from '../components/AutoSaveFormStatus';
 import { bindControl } from '../components/Control';
 import { Dropdown } from '../components/Dropdown';
 import { bindFormControl } from '../components/FormControl';
@@ -42,51 +43,52 @@ export function RecipeView() {
   }
 
   return (
-    <>
-      <Heading as="h1">Receta: {data.name}</Heading>
+    <AutoSaveForm
+      initialValues={data}
+      validationSchema={recipeSchema}
+      delayMs={AUTOSAVE_DELAY}
+      onSubmit={save}
+    >
+      {({ values }) => {
+        values.cost = values.ingredients.reduce((sum, x) => sum + x.cost, 0);
 
-      <AutoSaveForm
-        initialValues={data}
-        validationSchema={recipeSchema}
-        delayMs={AUTOSAVE_DELAY}
-        onSubmit={save}
-      >
-        {({ values }) => {
-          values.cost = values.ingredients.reduce((sum, x) => sum + x.cost, 0);
+        return (
+          <VStack align="stretch">
+            <Grid templateColumns="1fr auto" alignItems="center">
+              <Heading as="h1">{data.name}</Heading>
+              <AutoSaveFormStatus />
+            </Grid>
 
-          return (
-            <VStack align="stretch">
-              <RecipeControl name="name" label="Nombre" autoFocus />
+            <RecipeControl name="name" label="Nombre" autoFocus />
 
-              <Grid templateColumns="1fr 1fr" gap="var(--chakra-space-2)">
-                <FormControl>
-                  <FormLabel>Cantidad</FormLabel>
-                  <InputGroup>
-                    <RecipeControlSimple name="amount" as={NumberInput} />
-                    <InputRightElement width="5rem">
-                      <RecipeControlSimple
-                        name="unit"
-                        as={Dropdown}
-                        options={RecipeUnit}
-                      />
-                    </InputRightElement>
-                  </InputGroup>
-                </FormControl>
+            <Grid templateColumns="1fr 1fr" gap="var(--chakra-space-2)">
+              <FormControl>
+                <FormLabel>Cantidad</FormLabel>
+                <InputGroup>
+                  <RecipeControlSimple name="amount" as={NumberInput} />
+                  <InputRightElement width="5rem">
+                    <RecipeControlSimple
+                      name="unit"
+                      as={Dropdown}
+                      options={RecipeUnit}
+                    />
+                  </InputRightElement>
+                </InputGroup>
+              </FormControl>
 
-                <FormControl>
-                  <FormLabel>Coste</FormLabel>
-                  <InputGroup>
-                    <Input value={values.cost.toFixed(2)} isReadOnly />
-                    <InputRightAddon>€</InputRightAddon>
-                  </InputGroup>
-                </FormControl>
-              </Grid>
+              <FormControl>
+                <FormLabel>Coste</FormLabel>
+                <InputGroup>
+                  <Input value={values.cost.toFixed(2)} isReadOnly />
+                  <InputRightAddon>€</InputRightAddon>
+                </InputGroup>
+              </FormControl>
+            </Grid>
 
-              <RequiredIngredients />
-            </VStack>
-          );
-        }}
-      </AutoSaveForm>
-    </>
+            <RequiredIngredients />
+          </VStack>
+        );
+      }}
+    </AutoSaveForm>
   );
 }

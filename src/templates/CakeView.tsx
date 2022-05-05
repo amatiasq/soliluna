@@ -7,12 +7,14 @@ import {
   InputGroup,
   InputLeftElement,
   InputRightAddon,
+  VStack,
 } from '@chakra-ui/react';
 import React, { useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { RequiredIngredients } from '../components-smart/RequiredIngredients';
 import { RequiredRecipes } from '../components-smart/RequiredRecipes';
 import { AutoSaveForm } from '../components/AutoSaveForm';
+import { AutoSaveFormStatus } from '../components/AutoSaveFormStatus';
 import { bindControl } from '../components/Control';
 import { Dropdown } from '../components/Dropdown';
 import { bindFormControl } from '../components/FormControl';
@@ -42,38 +44,36 @@ export function CakeView() {
   }
 
   return (
-    <>
-      <Heading as="h1">Pastel: {data.name}</Heading>
+    <AutoSaveForm
+      initialValues={data}
+      validationSchema={cakeSchema}
+      delayMs={AUTOSAVE_DELAY}
+      onSubmit={save}
+    >
+      {({ values }) => {
+        values.cost =
+          values.recipes.reduce((sum, x) => sum + x.cost, 0) +
+          values.ingredients.reduce((sum, x) => sum + x.cost, 0);
 
-      <AutoSaveForm
-        initialValues={data}
-        validationSchema={cakeSchema}
-        delayMs={AUTOSAVE_DELAY}
-        onSubmit={save}
-      >
-        {({ values }) => {
-          values.cost =
-            values.recipes.reduce((sum, x) => sum + x.cost, 0) +
-            values.ingredients.reduce((sum, x) => sum + x.cost, 0);
+        return (
+          <VStack align="stretch">
+            <Grid templateColumns="1fr auto" alignItems="center">
+              <Heading as="h1">{data.name}</Heading>
+              <AutoSaveFormStatus />
+            </Grid>
 
-          return (
             <Grid
               gap="var(--chakra-space-2)"
               gridTemplate={[
                 `
-                "name"
-                "pax"
-                "cost"
-                "price"
-                "recipes"
-                "ingredients"
-                / 1fr
+                "name name"
+                "pax cost"
+                "price price"
+                / 1fr 1fr
               `,
                 `
                   "name name name"
                   "pax cost price"
-                  "recipes recipes recipes"
-                  "ingredients ingredients ingredients"
                   / 1fr 2fr 2fr
                 `,
               ]}
@@ -118,13 +118,13 @@ export function CakeView() {
                   <InputRightAddon>€</InputRightAddon>
                 </InputGroup>
               </FormControl>
-
-              <RequiredRecipes gridArea="recipes" pax={values.pax} />
-              <RequiredIngredients gridArea="ingredients" />
             </Grid>
-          );
-        }}
-      </AutoSaveForm>
-    </>
+
+            <RequiredRecipes gridArea="recipes" pax={values.pax} />
+            <RequiredIngredients gridArea="ingredients" />
+          </VStack>
+        );
+      }}
+    </AutoSaveForm>
   );
 }
