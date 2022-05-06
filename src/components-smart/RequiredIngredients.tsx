@@ -59,18 +59,12 @@ export function RequiredIngredients({ gridArea }: RequiredIngredientsProps) {
         const duplicated = all.find((x) => x !== item && x.id === item.id);
 
         if (!ingredient) {
+          // alert(`Ingrediente desconocido borrado: ${}`)
           remove();
           return null;
         }
 
         const units = getConversionsFor(ingredient.pkgUnit);
-        const changed = item.name !== ingredient.name;
-
-        if (changed) {
-          item.name = ingredient.name;
-          item.unit = smallestUnit(ingredient.pkgUnit);
-        }
-
         item.cost = calculateIngredientCost(ingredient, item.amount, item.unit);
 
         return (
@@ -93,7 +87,14 @@ export function RequiredIngredients({ gridArea }: RequiredIngredientsProps) {
               name={`ingredients.${index}.id`}
               as={Dropdown}
               options={names}
-              onChange={focusNextInput}
+              onChange={(event) => {
+                const newIng = getIngredient(
+                  event.target.value as IngredientId
+                );
+                item.name = newIng.name;
+                item.unit = smallestUnit(newIng.pkgUnit);
+                focusNextInput(event);
+              }}
               isInvalid={Boolean(duplicated)}
             />
 

@@ -63,14 +63,6 @@ export function RequiredRecipes({ gridArea, pax }: RequiredRecipesProps) {
           return null;
         }
 
-        const changed = item.name !== recipe.name;
-
-        if (changed) {
-          item.name = recipe.name;
-          item.amount = recipe.amount;
-          item.unit = recipe.unit;
-        }
-
         recipe.cost = calculateIngredientsCost(
           recipe.ingredients,
           ingredients.data
@@ -101,7 +93,13 @@ export function RequiredRecipes({ gridArea, pax }: RequiredRecipesProps) {
               name={`recipes.${index}.id`}
               as={Dropdown}
               options={names}
-              onChange={focusNextInput}
+              onChange={(FACU) => {
+                const newRecipe = getRecipe(FACU.target.id as RecipeId);
+                item.name = newRecipe.name;
+                item.amount = newRecipe.amount;
+                item.unit = newRecipe.unit;
+                focusNextInput(FACU);
+              }}
             />
 
             <InputGroup gridArea="quantity">
