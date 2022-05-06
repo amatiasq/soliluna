@@ -22,7 +22,12 @@ export interface FormListProps<T> extends Omit<StackProps, 'children'> {
   addLabel: string;
   addItem: () => T | Promise<T>;
   onRemove?: (item: T, index: number) => unknown | Promise<unknown>;
-  children: (x: { index: number; item: T; remove(): void }) => ReactNode;
+  children: (x: {
+    index: number;
+    item: T;
+    all: T[];
+    remove(): void;
+  }) => ReactNode;
 }
 
 export function FormList<T>({
@@ -75,7 +80,12 @@ export function FormList<T>({
                     }
                   : () => remove(index);
 
-                return children({ index, item, remove: handleRemove });
+                return children({
+                  index,
+                  item,
+                  remove: handleRemove,
+                  all: value,
+                });
               })}
             </Stack>
           </>

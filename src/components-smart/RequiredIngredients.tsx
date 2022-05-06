@@ -53,8 +53,10 @@ export function RequiredIngredients({ gridArea }: RequiredIngredientsProps) {
       addLabel="Añadir ingrediente"
       addItem={() => ingredientToUsage(defaultIngredient)}
     >
-      {({ index, item, remove }) => {
+      {({ index, item, all, remove }) => {
         const ingredient = getIngredient(item.id);
+
+        const duplicated = all.find((x) => x !== item && x.id === item.id);
 
         if (!ingredient) {
           remove();
@@ -92,6 +94,7 @@ export function RequiredIngredients({ gridArea }: RequiredIngredientsProps) {
               as={Dropdown}
               options={names}
               onChange={focusNextInput}
+              isInvalid={Boolean(duplicated)}
             />
 
             <InputGroup gridArea="quantity">
