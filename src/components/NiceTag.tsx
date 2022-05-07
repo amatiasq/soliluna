@@ -1,7 +1,7 @@
 import { forwardRef, Tag, TagProps, Tooltip } from '@chakra-ui/react';
-import React from 'react';
+import React, { useMemo } from 'react';
 
-const random = () => Math.random() * 6 - 3;
+const random = () => Math.round(Math.random() * 6 * 100) / 100 - 3;
 
 interface NiceTagProps extends TagProps {
   tooltip?: string;
@@ -9,6 +9,9 @@ interface NiceTagProps extends TagProps {
 
 export const NiceTag = forwardRef<NiceTagProps, 'div'>(
   ({ tooltip, children, ...props }, ref) => {
+    const rand = useMemo(random, []);
+    // const rand = 1;
+
     const content = tooltip ? (
       <Tooltip label={tooltip}>{children}</Tooltip>
     ) : (
@@ -20,9 +23,7 @@ export const NiceTag = forwardRef<NiceTagProps, 'div'>(
         {...props}
         ref={ref}
         cursor="default"
-        _hover={{
-          transform: `scale(1.1) rotate(${random()}deg)`,
-        }}
+        _hover={{ transform: `scale(1.1) rotate(${rand}deg)` }}
       >
         {content}
       </Tag>
