@@ -25,8 +25,6 @@ function AutoSaveAction({ debounceMs }: { debounceMs: number }) {
     }
   }, [JSON.stringify(formik.values)]);
 
-  useEffect(() => emergencySave);
-
   // This emergency save doesn't work
   useEffect(() => {
     window.addEventListener('beforeunload', emergencySave);
