@@ -96,7 +96,7 @@ export function RequiredRecipes({ gridArea, pax }: RequiredRecipesProps) {
               options={names}
               isInvalid={isDuplicated}
               onChange={(FACU) => {
-                const newRecipe = getRecipe(FACU.target.id as RecipeId);
+                const newRecipe = getRecipe(FACU.target.value as RecipeId);
                 item.name = newRecipe.name;
                 item.amount = newRecipe.amount;
                 item.unit = newRecipe.unit;
