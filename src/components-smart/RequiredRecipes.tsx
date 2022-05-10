@@ -1,12 +1,10 @@
 import {
-  Checkbox,
   Grid,
   GridItem,
   Input,
   InputGroup,
   InputRightAddon,
   InputRightElement,
-  Text,
 } from '@chakra-ui/react';
 import React from 'react';
 import { bindControl } from '../components/Control';
@@ -20,9 +18,9 @@ import { Ingredient } from '../model/Ingredient';
 import { calculateIngredientsCost } from '../model/IngredientUsage';
 import { calculateRecipeCost, Recipe, RecipeId } from '../model/Recipe';
 import { RecipeUsage } from '../model/RecipeUsage';
-import { printUnit } from '../model/Unit';
 import { focusNextInput } from '../util/focusNextInput';
 import { unkonwnEntity } from '../util/unknownEntity';
+import { ShowIngredientUsage } from './ShowIngredientUsage';
 
 export interface RequiredRecipesProps {
   gridArea?: string;
@@ -128,22 +126,10 @@ export function RequiredRecipes({ gridArea, pax }: RequiredRecipesProps) {
             />
 
             <GridItem gridArea="ingredients">
-              {recipe.ingredients.map((ingredient) => (
-                <Grid
-                  key={ingredient.id}
-                  templateColumns="1fr auto 1fr"
-                  gap="var(--chakra-space-2)"
-                >
-                  <Text textAlign="right">
-                    {printUnit(
-                      (ingredient.amount / recipe.amount) * item.amount,
-                      ingredient.unit
-                    )}
-                  </Text>
-                  <Checkbox checked={false} />
-                  <Text>{ingredient.name}</Text>
-                </Grid>
-              ))}
+              <ShowIngredientUsage
+                ingredients={recipe.ingredients}
+                amountModifier={(x) => (x / recipe.amount) * item.amount}
+              />
             </GridItem>
           </Grid>
         );
