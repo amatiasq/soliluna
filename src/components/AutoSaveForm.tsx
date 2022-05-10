@@ -5,13 +5,29 @@ import {
   FormikValues,
   useFormikContext,
 } from 'formik';
-import React, { useEffect } from 'react';
+import React, {
+  createContext,
+  PropsWithChildren,
+  useEffect,
+  useRef,
+} from 'react';
 import { useScheduler } from '../hooks/useScheduler';
 import { toFormikValidate } from '../util/toFormikValidate';
 
-function AutoSaveAction({ debounceMs }: { debounceMs: number }) {
+type AutoSaveState = 'idle' | 'scheduled' | 'submitting';
+export const AutoSaveContext = createContext<AutoSaveState>('idle');
+
+function AutoSaveAction({
+  debounceMs,
+  children,
+}: PropsWithChildren<{ debounceMs: number }>) {
+  const state = useRef<AutoSaveState>('idle');
   const formik = useFormikContext();
-  const scheduler = useScheduler(debounceMs, () => formik.submitForm());
+
+  const scheduler = useScheduler(debounceMs, () => {
+    state.current = 'submitting';
+    formik.submitForm();
+  });
 
   function emergencySave() {
     if (scheduler.isRunning) {
@@ -19,8 +35,13 @@ function AutoSaveAction({ debounceMs }: { debounceMs: number }) {
     }
   }
 
+  if (state.current === 'submitting' && !formik.isSubmitting) {
+    state.current = 'idle';
+  }
+
   useEffect(() => {
     if (formik.dirty) {
+      state.current = 'scheduled';
       scheduler.restart();
     }
   }, [JSON.stringify(formik.values)]);
@@ -31,7 +52,11 @@ function AutoSaveAction({ debounceMs }: { debounceMs: number }) {
     return () => window.removeEventListener('beforeunload', emergencySave);
   }, []);
 
-  return null;
+  return (
+    <AutoSaveContext.Provider value={state.current}>
+      {children}
+    </AutoSaveContext.Provider>
+  );
 }
 
 export type AutoSaveFormProps<Values extends FormikValues = FormikValues> =
@@ -54,8 +79,9 @@ export function AutoSaveForm<Values extends FormikValues = FormikValues>({
 
         return (
           <Form>
-            <AutoSaveAction debounceMs={delayMs} />
-            {typeof children === 'function' ? children(formikBag) : children}
+            <AutoSaveAction debounceMs={delayMs}>
+              {typeof children === 'function' ? children(formikBag) : children}
+            </AutoSaveAction>
           </Form>
         );
       }}
