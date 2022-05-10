@@ -7,6 +7,7 @@ import {
   InputGroup,
   InputLeftElement,
   InputRightAddon,
+  Textarea,
   VStack,
 } from '@chakra-ui/react';
 import React, { useCallback } from 'react';
@@ -16,6 +17,7 @@ import { RequiredRecipes } from '../components-smart/RequiredRecipes';
 import { AutoSaveForm } from '../components/AutoSaveForm';
 import { AutoSaveFormStatus } from '../components/AutoSaveFormStatus';
 import { bindControl } from '../components/Control';
+import { DateInput } from '../components/DateInput';
 import { Dropdown } from '../components/Dropdown';
 import { bindFormControl } from '../components/FormControl';
 import { Loading } from '../components/Loading';
@@ -71,24 +73,34 @@ function CakeForm({ values }: { values: Cake }) {
         gap="var(--chakra-space-2)"
         gridTemplate={[
           `
-                "name name"
-                "pax cost"
-                "price price"
-                "recipes recipes"
-                "ingredients ingredients"
-                / 1fr 1fr
-              `,
+          "name name"
+          "pax cost"
+          "date price"
+          "notes notes"
+          "recipes recipes"
+          "ingredients ingredients"
+          / 1fr 1fr
+        `,
           `
-                  "name name name"
-                  "pax cost price"
-                  "recipes recipes recipes"
-                  "ingredients ingredients ingredients"
-                    / 1fr 2fr 2fr
-                `,
+          "name name"
+          "pax cost"
+          "date price"
+          "notes notes"
+          "recipes recipes"
+          "ingredients ingredients"
+          / 1fr 2fr
+        `,
         ]}
       >
         <CakeControl gridArea="name" name="name" label="Nombre" autoFocus />
         <CakeControl gridArea="pax" name="pax" label="PAX" as={NumberInput} />
+        <CakeControl gridArea="date" name="date" label="Fecha" as={DateInput} />
+        <CakeControl
+          gridArea="notes"
+          name="notes"
+          label="Notas"
+          as={Textarea}
+        />
 
         <RequiredRecipes gridArea="recipes" pax={values.pax} />
         <RequiredIngredients gridArea="ingredients" />
