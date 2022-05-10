@@ -10,7 +10,6 @@ interface NiceTagProps extends TagProps {
 export const NiceTag = forwardRef<NiceTagProps, 'div'>(
   ({ tooltip, children, ...props }, ref) => {
     const rand = useMemo(random, []);
-    // const rand = 1;
 
     const content = tooltip ? (
       <Tooltip label={tooltip}>{children}</Tooltip>

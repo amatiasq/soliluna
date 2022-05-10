@@ -22,6 +22,7 @@ import { calculateRecipeCost, Recipe, RecipeId } from '../model/Recipe';
 import { RecipeUsage } from '../model/RecipeUsage';
 import { printUnit } from '../model/Unit';
 import { focusNextInput } from '../util/focusNextInput';
+import { unkonwnEntity } from '../util/unknownEntity';
 
 export interface RequiredRecipesProps {
   gridArea?: string;
@@ -60,6 +61,7 @@ export function RequiredRecipes({ gridArea, pax }: RequiredRecipesProps) {
         const isDuplicated = all.some((x) => x !== item && x.id === item.id);
 
         if (!recipe) {
+          unkonwnEntity('receta desconocida', item);
           remove();
           return null;
         }

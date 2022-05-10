@@ -21,6 +21,7 @@ import {
 import { ingredientToUsage, IngredientUsage } from '../model/IngredientUsage';
 import { getConversionsFor, smallestUnit } from '../model/Unit';
 import { focusNextInput } from '../util/focusNextInput';
+import { unkonwnEntity } from '../util/unknownEntity';
 
 export interface RequiredIngredientsProps {
   gridArea?: string;
@@ -59,7 +60,7 @@ export function RequiredIngredients({ gridArea }: RequiredIngredientsProps) {
         const isDuplicated = all.some((x) => x !== item && x.id === item.id);
 
         if (!ingredient) {
-          // alert(`Ingrediente desconocido borrado: ${}`)
+          unkonwnEntity('ingrediente desconocido', item);
           remove();
           return null;
         }
