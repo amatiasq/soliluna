@@ -1,32 +1,21 @@
-import {
-  Form,
-  Formik,
-  FormikConfig,
-  FormikValues,
-  useFormikContext,
-} from 'formik';
-import React, {
-  createContext,
-  PropsWithChildren,
-  useEffect,
-  useRef,
-} from 'react';
+import { Form, Formik, FormikConfig, FormikValues } from 'formik';
+import React, { useEffect } from 'react';
+import { useAutoSave } from '../hooks/useAutoSave';
 import { useScheduler } from '../hooks/useScheduler';
 import { toFormikValidate } from '../util/toFormikValidate';
 
-type AutoSaveState = 'idle' | 'scheduled' | 'submitting';
-export const AutoSaveContext = createContext<AutoSaveState>('idle');
+function AutoSaveAction({ debounceMs }: { debounceMs: number }) {
+  const formik = useAutoSave();
 
-function AutoSaveAction({
-  debounceMs,
-  children,
-}: PropsWithChildren<{ debounceMs: number }>) {
-  const state = useRef<AutoSaveState>('idle');
-  const formik = useFormikContext();
+  if (!formik.autoSaveState) {
+    formik.autoSaveState = 'idle';
+  }
 
   const scheduler = useScheduler(debounceMs, () => {
-    state.current = 'submitting';
-    formik.submitForm();
+    formik.autoSaveState = 'submitting';
+    if (formik.isValid) {
+      formik.submitForm();
+    }
   });
 
   function emergencySave() {
@@ -35,16 +24,16 @@ function AutoSaveAction({
     }
   }
 
-  if (state.current === 'submitting' && !formik.isSubmitting) {
-    state.current = 'idle';
+  if (formik.autoSaveState === 'submitting' && !formik.isSubmitting) {
+    formik.autoSaveState = 'idle';
   }
 
   useEffect(() => {
-    if (formik.dirty) {
-      state.current = 'scheduled';
+    if (formik.isValidating) {
+      formik.autoSaveState = 'scheduled';
       scheduler.restart();
     }
-  }, [JSON.stringify(formik.values)]);
+  }, [formik.isValidating]);
 
   // This emergency save doesn't work
   useEffect(() => {
@@ -52,11 +41,7 @@ function AutoSaveAction({
     return () => window.removeEventListener('beforeunload', emergencySave);
   }, []);
 
-  return (
-    <AutoSaveContext.Provider value={state.current}>
-      {children}
-    </AutoSaveContext.Provider>
-  );
+  return null;
 }
 
 export type AutoSaveFormProps<Values extends FormikValues = FormikValues> =
@@ -79,9 +64,8 @@ export function AutoSaveForm<Values extends FormikValues = FormikValues>({
 
         return (
           <Form>
-            <AutoSaveAction debounceMs={delayMs}>
-              {typeof children === 'function' ? children(formikBag) : children}
-            </AutoSaveAction>
+            <AutoSaveAction debounceMs={delayMs} />
+            {typeof children === 'function' ? children(formikBag) : children}
           </Form>
         );
       }}

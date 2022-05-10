@@ -1,26 +1,25 @@
 import { Icon } from '@chakra-ui/react';
 import { useFormikContext } from 'formik';
-import React, { useContext } from 'react';
+import React from 'react';
 import { FaCheck, FaClock, FaSpinner, FaTimes } from 'react-icons/fa';
-import { AutoSaveContext } from './AutoSaveForm';
+import { AutoSaveContext } from '../hooks/useAutoSave';
 
 export function AutoSaveFormStatus() {
-  const state = useContext(AutoSaveContext);
-  const formik = useFormikContext();
+  const formik = useFormikContext() as AutoSaveContext;
 
   if (Object.keys(formik.errors).length > 0) {
     return <Icon as={FaTimes} color="red" />;
   }
 
-  if (state === 'idle') {
+  if (formik.autoSaveState === 'idle') {
     return <Icon as={FaCheck} color="green" />;
   }
 
-  if (state === 'submitting') {
+  if (formik.autoSaveState === 'submitting') {
     return <Icon as={FaSpinner} color="yellow" />;
   }
 
-  if (state === 'scheduled') {
+  if (formik.autoSaveState === 'scheduled') {
     return <Icon as={FaClock} color="blue" />;
   }
 

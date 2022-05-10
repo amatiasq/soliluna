@@ -1,1 +1,1 @@
-export const AUTOSAVE_DELAY = 300;
+export const AUTOSAVE_DELAY = 1000;
