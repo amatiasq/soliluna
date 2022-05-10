@@ -43,7 +43,15 @@ export function RecipeList() {
             url={`/recetas/${x.id}`}
           >
             {x.ingredients.map((y) => (
-              <NiceTag key={y.id} tooltip={printUnit(y.amount, y.unit)}>
+              <NiceTag
+                key={`${y.id}-${y.amount}`}
+                tooltip={printUnit(y.amount, y.unit)}
+                colorScheme={
+                  x.ingredients.some((x) => x !== y && x.id === y.id)
+                    ? 'red'
+                    : undefined
+                }
+              >
                 {y.name}
               </NiceTag>
             ))}

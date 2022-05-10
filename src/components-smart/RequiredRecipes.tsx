@@ -55,8 +55,9 @@ export function RequiredRecipes({ gridArea, pax }: RequiredRecipesProps) {
       addLabel="Añadir receta"
       addItem={() => defaultRecipe}
     >
-      {({ index, item, remove }) => {
+      {({ index, item, all, remove }) => {
         const recipe = getRecipe(item.id);
+        const isDuplicated = all.some((x) => x !== item && x.id === item.id);
 
         if (!recipe) {
           remove();
@@ -93,6 +94,7 @@ export function RequiredRecipes({ gridArea, pax }: RequiredRecipesProps) {
               name={`recipes.${index}.id`}
               as={Dropdown}
               options={names}
+              isInvalid={isDuplicated}
               onChange={(FACU) => {
                 const newRecipe = getRecipe(FACU.target.id as RecipeId);
                 item.name = newRecipe.name;

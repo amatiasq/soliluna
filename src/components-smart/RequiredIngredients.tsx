@@ -56,7 +56,7 @@ export function RequiredIngredients({ gridArea }: RequiredIngredientsProps) {
       {({ index, item, all, remove }) => {
         const ingredient = getIngredient(item.id);
 
-        const duplicated = all.find((x) => x !== item && x.id === item.id);
+        const isDuplicated = all.some((x) => x !== item && x.id === item.id);
 
         if (!ingredient) {
           // alert(`Ingrediente desconocido borrado: ${}`)
@@ -87,6 +87,7 @@ export function RequiredIngredients({ gridArea }: RequiredIngredientsProps) {
               name={`ingredients.${index}.id`}
               as={Dropdown}
               options={names}
+              isInvalid={isDuplicated}
               onChange={(event) => {
                 const newIng = getIngredient(
                   event.target.value as IngredientId
@@ -95,7 +96,6 @@ export function RequiredIngredients({ gridArea }: RequiredIngredientsProps) {
                 item.unit = smallestUnit(newIng.pkgUnit);
                 focusNextInput(event);
               }}
-              isInvalid={Boolean(duplicated)}
             />
 
             <InputGroup gridArea="quantity">

@@ -1,7 +1,6 @@
-export function focusNextInput({
-  target,
-}: React.ChangeEvent<HTMLInputElement>) {
-  // lol
+import { ChangeEvent } from 'react';
+
+export function focusNextInput({ target }: ChangeEvent<HTMLInputElement>) {
   const parent = target.closest('.chakra-form-control')?.parentElement;
 
   if (!parent) return;
