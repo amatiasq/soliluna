@@ -1,13 +1,13 @@
-import * as yup from 'yup';
-import { Recipe } from './Recipe';
+import { z } from 'zod';
+import { Recipe, RecipeId } from './Recipe';
 import { RecipeUnit } from './RecipeUnit';
 
 export interface RecipeUsage extends Omit<Recipe, 'ingredients'> {}
 
-export const recipeUsageSchema = yup.object().shape({
-  id: yup.string().required(),
-  name: yup.string().required(),
-  amount: yup.number().required(),
-  unit: yup.string().oneOf(RecipeUnit),
-  cost: yup.number().required(),
+export const RecipeUsage = z.object({
+  id: RecipeId,
+  name: z.string(),
+  amount: z.number(),
+  unit: z.enum(RecipeUnit),
+  cost: z.number(),
 });

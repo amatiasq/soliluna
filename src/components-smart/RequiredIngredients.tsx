@@ -56,7 +56,6 @@ export function RequiredIngredients({ gridArea }: RequiredIngredientsProps) {
     >
       {({ index, item, all, remove }) => {
         const ingredient = getIngredient(item.id);
-
         const isDuplicated = all.some((x) => x !== item && x.id === item.id);
 
         if (!ingredient) {

@@ -1,8 +1,9 @@
-import * as yup from 'yup';
-import { IngredientUsage, ingredientUsageSchema } from './IngredientUsage';
+import { z } from 'zod';
+import { IngredientUsage } from './IngredientUsage';
 import { RecipeUnit } from './RecipeUnit';
 
 export type RecipeId = `snowflake RecipeId`;
+export const RecipeId = z.string() as any as z.ZodEnum<[RecipeId]>;
 
 export interface Recipe {
   id: RecipeId;
@@ -13,12 +14,12 @@ export interface Recipe {
   ingredients: IngredientUsage[];
 }
 
-export const recipeSchema = yup.object().shape({
-  name: yup.string().required(),
-  amount: yup.number().required(),
-  unit: yup.string().oneOf(RecipeUnit).required(),
-  cost: yup.number().required(),
-  ingredients: yup.array().of(ingredientUsageSchema.required()).required(),
+export const Recipe: z.ZodType<Omit<Recipe, 'id'>> = z.object({
+  name: z.string(),
+  amount: z.number(),
+  unit: z.enum(RecipeUnit),
+  cost: z.number(),
+  ingredients: z.array(IngredientUsage),
 });
 
 export function calculateRecipeCost(recipe: Recipe, amount: number): number {

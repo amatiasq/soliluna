@@ -22,7 +22,7 @@ import { Loading } from '../components/Loading';
 import { NumberInput } from '../components/NumberInput';
 import { AUTOSAVE_DELAY } from '../constants';
 import { useFire } from '../hooks/useFire';
-import { Cake, CakeId, cakeSchema } from '../model/Cake';
+import { Cake, CakeId } from '../model/Cake';
 import { multiplierOptions } from '../model/Multipliers';
 import { capitalise } from '../util/capitalise';
 
@@ -46,7 +46,7 @@ export function CakeView() {
   return (
     <AutoSaveForm
       initialValues={data}
-      validationSchema={cakeSchema}
+      validationSchema={Cake}
       delayMs={AUTOSAVE_DELAY}
       onSubmit={save}
     >

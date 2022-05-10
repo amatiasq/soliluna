@@ -7,6 +7,7 @@ import {
 } from 'formik';
 import React, { useEffect } from 'react';
 import { useScheduler } from '../hooks/useScheduler';
+import { toFormikValidate } from '../util/toFormikValidate';
 
 function AutoSaveAction({ debounceMs }: { debounceMs: number }) {
   const formik = useFormikContext();
@@ -41,12 +42,13 @@ export type AutoSaveFormProps<Values extends FormikValues = FormikValues> =
 export function AutoSaveForm<Values extends FormikValues = FormikValues>({
   children,
   delayMs,
+  validationSchema,
   ...props
 }: AutoSaveFormProps<Values>) {
   return (
-    <Formik {...props}>
+    <Formik {...props} validate={toFormikValidate(validationSchema)}>
       {(formikBag) => {
-        (formikBag as any).validationSchema = props.validationSchema;
+        (formikBag as any).validationSchema = validationSchema;
 
         if (formikBag.errors && Object.keys(formikBag.errors).length) {
           console.log('Form errors', formikBag.errors);

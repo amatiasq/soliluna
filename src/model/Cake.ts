@@ -1,7 +1,7 @@
-import * as yup from 'yup';
-import { IngredientUsage, ingredientUsageSchema } from './IngredientUsage';
+import { z } from 'zod';
+import { IngredientUsage } from './IngredientUsage';
 import { Multipliers } from './Multipliers';
-import { RecipeUsage, recipeUsageSchema } from './RecipeUsage';
+import { RecipeUsage } from './RecipeUsage';
 
 export type CakeId = `snowflake CakeId`;
 
@@ -15,11 +15,11 @@ export interface Cake {
   ingredients: IngredientUsage[];
 }
 
-export const cakeSchema = yup.object().shape({
-  name: yup.string().required(),
-  pax: yup.number().required(),
-  cost: yup.number().required(),
-  multiplier: yup.number().oneOf(Multipliers).required(),
-  recipes: yup.array().of(recipeUsageSchema.required()).required(),
-  ingredients: yup.array().of(ingredientUsageSchema.required()).required(),
+export const Cake: z.ZodType<Omit<Cake, 'id' | 'multiplier'>> = z.object({
+  name: z.string(),
+  pax: z.number(),
+  cost: z.number(),
+  multiplier: z.enum(Multipliers as any),
+  recipes: z.array(RecipeUsage),
+  ingredients: z.array(IngredientUsage),
 });

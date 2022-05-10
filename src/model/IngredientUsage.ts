@@ -1,4 +1,4 @@
-import * as yup from 'yup';
+import { z } from 'zod';
 import {
   calculateIngredientCost,
   Ingredient,
@@ -14,12 +14,12 @@ export interface IngredientUsage {
   unit: Unit;
 }
 
-export const ingredientUsageSchema = yup.object().shape({
-  id: yup.string().required(),
-  name: yup.string().required(),
-  cost: yup.number().required(),
-  amount: yup.number().required(),
-  unit: yup.string().oneOf(Unit).required(),
+export const IngredientUsage: z.ZodType<IngredientUsage> = z.object({
+  id: IngredientId,
+  name: z.string(),
+  cost: z.number(),
+  amount: z.number(),
+  unit: z.enum(Unit),
 });
 
 export function ingredientToUsage(ingredient: Ingredient): IngredientUsage {

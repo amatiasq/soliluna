@@ -1,7 +1,8 @@
-import * as yup from 'yup';
+import { z } from 'zod';
 import { convert, Unit } from './Unit';
 
 export type IngredientId = `snowflake IngredientId`;
+export const IngredientId = z.string() as unknown as z.ZodEnum<[IngredientId]>;
 
 export interface Ingredient {
   id: IngredientId;
@@ -11,11 +12,11 @@ export interface Ingredient {
   pkgPrice: number;
 }
 
-export const ingredientSchema = yup.object().shape({
-  name: yup.string().required(),
-  pkgSize: yup.number().positive().required(),
-  pkgUnit: yup.string().oneOf(Unit).required(),
-  pkgPrice: yup.number().positive().required(),
+export const Ingredient: z.ZodType<Omit<Ingredient, 'id'>> = z.object({
+  name: z.string(),
+  pkgSize: z.number().positive(),
+  pkgUnit: z.enum(Unit),
+  pkgPrice: z.number().positive(),
 });
 
 export function calculateIngredientCost(

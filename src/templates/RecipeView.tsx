@@ -24,7 +24,7 @@ import { useFire } from '../hooks/useFire';
 import { useFireList } from '../hooks/useFireList';
 import { Ingredient } from '../model/Ingredient';
 import { calculateIngredientsCost } from '../model/IngredientUsage';
-import { Recipe, RecipeId, recipeSchema } from '../model/Recipe';
+import { Recipe, RecipeId } from '../model/Recipe';
 import { RecipeUnit } from '../model/RecipeUnit';
 import { capitalise } from '../util/capitalise';
 
@@ -50,7 +50,7 @@ export function RecipeView() {
   return (
     <AutoSaveForm
       initialValues={data}
-      validationSchema={recipeSchema}
+      validationSchema={Recipe}
       delayMs={AUTOSAVE_DELAY}
       onSubmit={save}
     >
