@@ -23,6 +23,7 @@
     "yup": "^0.32.11"
   },
   "devDependencies": {
+    "@parcel/transformer-css": "^2.5.0",
     "@types/react": "^18.0.5",
     "@types/react-dom": "^18.0.1",
     "parcel": "^2.4.1",
