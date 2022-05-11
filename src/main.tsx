@@ -6,6 +6,7 @@ import ScrollToTop from './components/ScrollToTop';
 import { pages } from './router';
 import { App } from './templates/App';
 import { CakeView } from './templates/CakeView';
+import { ExportData } from './templates/ExportData';
 import { Home } from './templates/Home';
 import { RecipeView } from './templates/RecipeView';
 
@@ -25,6 +26,7 @@ root.render(
           ))}
           <Route path="/recetas/:id" element={<RecipeView />} />
           <Route path="/pasteles/:id" element={<CakeView />} />
+          <Route path="/export" element={<ExportData />} />
         </Route>
       </Routes>
     </BrowserRouter>
