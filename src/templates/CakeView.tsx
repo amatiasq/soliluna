@@ -9,7 +9,7 @@ import {
   InputRightAddon,
   VStack,
 } from '@chakra-ui/react';
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { RequiredIngredients } from '../components-smart/RequiredIngredients';
 import { RequiredRecipes } from '../components-smart/RequiredRecipes';
@@ -50,18 +50,15 @@ export function CakeView() {
       delayMs={AUTOSAVE_DELAY}
       onSubmit={save}
     >
-      {({ values }) => <CakeForm {...values} />}
+      {({ values }) => <CakeForm values={values} />}
     </AutoSaveForm>
   );
 }
 
-function CakeForm(values: Cake) {
-  values.cost = useMemo(
-    () =>
-      values.recipes.reduce((sum, x) => sum + x.cost, 0) +
-      values.ingredients.reduce((sum, x) => sum + x.cost, 0),
-    [values.ingredients, values.recipes]
-  );
+function CakeForm({ values }: { values: Cake }) {
+  values.cost =
+    values.recipes.reduce((sum, x) => sum + x.cost, 0) +
+    values.ingredients.reduce((sum, x) => sum + x.cost, 0);
 
   return (
     <VStack align="stretch">
