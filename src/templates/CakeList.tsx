@@ -7,6 +7,7 @@ import { SilList } from '../layout/SilList';
 import { SilListItem } from '../layout/SilListItem';
 import { Cake } from '../model/Cake';
 import { printUnit } from '../model/Unit';
+import { printDate } from '../util/date';
 
 export function CakeList() {
   const navigate = useNavigate();
@@ -39,7 +40,7 @@ export function CakeList() {
           name={x.name || '(sin nombre)'}
           remove={() => remove(x)}
           removeLabel={`Borrar pastel ${x.name || ''}`}
-          tag={`${x.pax || '0'} PAX`}
+          tag={x.date ? `${printDate(x.date.toDate())}` : `${x.pax || '0'} PAX`}
           url={`/pasteles/${x.id}`}
         >
           {x.recipes.map((y) => (
