@@ -1,4 +1,12 @@
-import { Flex, Grid, Heading, LinkBox, Tag, VStack } from '@chakra-ui/react';
+import {
+  Flex,
+  Grid,
+  Heading,
+  HStack,
+  LinkBox,
+  Tag,
+  VStack,
+} from '@chakra-ui/react';
 import React, { PropsWithChildren } from 'react';
 import { DeleteButton } from '../components/DeleteButton';
 import { LinkOverlay } from '../components/Link';
@@ -7,7 +15,7 @@ interface SilListItemProps {
   name: string;
   remove: () => unknown;
   removeLabel: string;
-  tag: string;
+  tag: string | string[];
   url: string;
 }
 
@@ -19,6 +27,8 @@ export function SilListItem({
   tag,
   url,
 }: PropsWithChildren<SilListItemProps>) {
+  const tags = Array.isArray(tag) ? tag : [tag];
+
   return (
     <VStack align="stretch" gap="var(--chakra-space-4)" role="group">
       <LinkBox
@@ -35,9 +45,13 @@ export function SilListItem({
           <LinkOverlay to={url}>{name}</LinkOverlay>
         </Heading>
 
-        <Tag variant="solid" cursor="default">
-          {tag}
-        </Tag>
+        <HStack>
+          {tags.filter(Boolean).map((x) => (
+            <Tag key={x} variant="solid" cursor="default">
+              {x}
+            </Tag>
+          ))}
+        </HStack>
 
         <DeleteButton label={removeLabel} onConfirm={remove} />
       </LinkBox>

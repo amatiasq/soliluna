@@ -5,7 +5,9 @@ export function date(val = new Date()) {
   return `${year}-${month}-${day}`;
 }
 
-export function printDate(val = new Date()) {
+export function printDate(val: Date | undefined) {
+  if (!val) return '';
+
   return Intl.DateTimeFormat(undefined, {
     day: 'numeric',
     month: 'short',

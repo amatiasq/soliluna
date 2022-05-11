@@ -40,7 +40,7 @@ export function CakeList() {
           name={x.name || '(sin nombre)'}
           remove={() => remove(x)}
           removeLabel={`Borrar pastel ${x.name || ''}`}
-          tag={x.date ? `${printDate(x.date.toDate())}` : `${x.pax || '0'} PAX`}
+          tag={[printDate(x.date?.toDate()), `${x.pax || '0'} PAX`]}
           url={`/pasteles/${x.id}`}
         >
           {x.recipes.map((y) => (
@@ -52,6 +52,7 @@ export function CakeList() {
               {y.name}
             </NiceTag>
           ))}
+
           {x.ingredients.map((y) => (
             <NiceTag key={y.id} tooltip={printUnit(y.amount, y.unit)}>
               {y.name}
