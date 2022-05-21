@@ -4,7 +4,7 @@ import {
   Ingredient,
   IngredientId,
 } from './Ingredient';
-import { smallestUnit, Unit } from './Unit';
+import { convert, smallestUnit, Unit } from './Unit';
 
 export interface IngredientUsage {
   id: IngredientId;
@@ -47,4 +47,24 @@ export function calculateIngredientsCost(
   }
 
   return ingredients.reduce((sum, x) => sum + x.cost, 0);
+}
+
+export function calculateIngredientWeight(
+  ingredient: IngredientUsage,
+  amountModifier = (x: number) => x
+) {
+  const { unit } = ingredient;
+  const amount = amountModifier(ingredient.amount);
+
+  if (unit === 'g' || unit === 'ml') return parseFloat(amount as any);
+
+  if (unit === 'kg' || unit === 'l') {
+    return convert(amount, 'kg', 'g');
+  }
+
+  if (/huevo/i.test(ingredient.name)) {
+    return 65 * amount;
+  }
+
+  return 0;
 }
