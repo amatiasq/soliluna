@@ -40,7 +40,11 @@ export function CakeList() {
           name={x.name || '(sin nombre)'}
           remove={() => remove(x)}
           removeLabel={`Borrar pastel ${x.name || ''}`}
-          tag={[printDate(x.date?.toDate()), `${x.pax || '0'} PAX`]}
+          tag={[
+            printUnit(x.cost * x.multiplier, '€'),
+            printDate(x.date?.toDate()),
+            `${x.pax || '0'} PAX`,
+          ]}
           url={`/pasteles/${x.id}`}
         >
           {x.recipes.map((y) => (

@@ -45,7 +45,7 @@ export function largestUnit(unit: Unit) {
   return result.shift()!;
 }
 
-export function printUnit(value: number, unit: Unit | 'PAX') {
+export function printUnit(value: number, unit: Unit | 'PAX' | '€') {
   if (value < 1 && (unit === 'kg' || unit === 'l')) {
     value = value * 1000;
     unit = smallestUnit(unit);
