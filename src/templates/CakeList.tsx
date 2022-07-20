@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loading } from '../components/Loading';
 import { NiceTag } from '../components/NiceTag';
@@ -11,9 +11,17 @@ import { printDate } from '../util/date';
 
 export function CakeList() {
   const navigate = useNavigate();
-  const { isLoading, data, add, remove } = useFireList<Cake>('pasteles', {
-    orderBy: 'date',
-  });
+  const { isLoading, data, add, remove } = useFireList<Cake>('pasteles');
+
+  const list = useMemo(
+    () => [
+      ...data.filter((cake) => !cake.date),
+      ...data
+        .filter((cake) => cake.date)
+        .sort((a, b) => `${a.date}`.localeCompare(`${b.date}`)),
+    ],
+    [data]
+  );
 
   if (isLoading) {
     return <Loading />;
@@ -34,7 +42,7 @@ export function CakeList() {
 
   return (
     <SilList title="Pasteles" addLabel="Añadir pastel" add={create}>
-      {data.map((x) => (
+      {list.map((x) => (
         <SilListItem
           key={x.id}
           name={x.name || '(sin nombre)'}
