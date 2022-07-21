@@ -11,7 +11,7 @@ import { printDate } from '../util/date';
 
 export function CakeList() {
   const navigate = useNavigate();
-  const { isLoading, data, add, remove } = useFireList<Cake>('pasteles');
+  const { isLoading, data = [], add, remove } = useFireList<Cake>('pasteles');
 
   const list = useMemo(
     () => [
