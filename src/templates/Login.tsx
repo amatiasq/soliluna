@@ -9,7 +9,7 @@ export function Login() {
   const { status, data: signInCheckResult } = useSigninCheck();
 
   if (status === 'loading') {
-    return <span>Loading</span>;
+    return <span>Cargando...</span>;
   }
 
   if (!signInCheckResult.signedIn) {
