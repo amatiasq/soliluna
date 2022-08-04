@@ -1,22 +1,13 @@
 import { FirebaseOptions } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import React, { PropsWithChildren } from 'react';
 import {
+  AuthProvider,
   FirebaseAppProvider,
   FirestoreProvider,
   useFirebaseApp,
 } from 'reactfire';
-
-export interface FirebaseInternalProps {}
-
-function FirebaseInternal({
-  children,
-}: PropsWithChildren<FirebaseInternalProps>) {
-  const firestoreInstance = getFirestore(useFirebaseApp());
-  return (
-    <FirestoreProvider sdk={firestoreInstance}>{children}</FirestoreProvider>
-  );
-}
 
 export interface FirebaseProps {
   config: FirebaseOptions;
@@ -30,5 +21,21 @@ export function Firebase({
     <FirebaseAppProvider firebaseConfig={config}>
       <FirebaseInternal>{children}</FirebaseInternal>
     </FirebaseAppProvider>
+  );
+}
+
+interface FirebaseInternalProps {}
+
+function FirebaseInternal({
+  children,
+}: PropsWithChildren<FirebaseInternalProps>) {
+  const app = useFirebaseApp();
+  const firestore = getFirestore(app);
+  const auth = getAuth(app);
+
+  return (
+    <AuthProvider sdk={auth}>
+      <FirestoreProvider sdk={firestore}>{children}</FirestoreProvider>
+    </AuthProvider>
   );
 }

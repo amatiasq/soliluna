@@ -13,14 +13,11 @@ import { Outlet } from 'react-router-dom';
 import { Firebase } from '../components/Firebase';
 import { Link } from '../components/Link';
 import { pages } from '../router';
+import { readEnvironmentVariable } from '../util/readEnvironmentVariable';
 
-const stringConfig = process.env.FIREBASE_CONFIGURATION;
-
-if (!stringConfig) {
-  throw new Error(`Environment variable FIREBASE_CONFIGURATION is required!`);
-}
-
-const firebaseConfig = JSON.parse(stringConfig) as FirebaseOptions;
+const firebaseConfig = readEnvironmentVariable<FirebaseOptions>(
+  'FIREBASE_CONFIGURATION'
+);
 
 function Header() {
   const { colorMode, toggleColorMode } = useColorMode();

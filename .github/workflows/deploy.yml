@@ -29,6 +29,7 @@ jobs:
       - name: Build app
         env:
           FIREBASE_CONFIGURATION: ${{ secrets.FIREBASE_CONFIGURATION }}
+          VALID_USERS: ${{ secrets.VALID_USERS }}
         run: npm run build
 
       - name: Deploy
