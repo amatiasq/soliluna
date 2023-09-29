@@ -1,6 +1,6 @@
 const env: Record<string, string | undefined> = {
-  FIREBASE_CONFIGURATION: process.env.FIREBASE_CONFIGURATION,
-  VALID_USERS: process.env.VALID_USERS,
+  FIREBASE_CONFIGURATION: import.meta.env.VITE_FIREBASE_CONFIGURATION,
+  VALID_USERS: import.meta.env.VITE_VALID_USERS,
 };
 
 export function readEnvironmentVariable<T>(name: string): T {
