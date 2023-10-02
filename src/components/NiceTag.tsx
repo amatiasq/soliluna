@@ -1,5 +1,5 @@
 import { forwardRef, Tag, TagProps, Tooltip } from '@chakra-ui/react';
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 
 const random = () => Math.round(Math.random() * 6 * 100) / 100 - 3;
 

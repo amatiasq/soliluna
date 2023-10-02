@@ -9,7 +9,7 @@ import {
   InputRightElement,
   VStack,
 } from '@chakra-ui/react';
-import React, { useCallback } from 'react';
+import { useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { RequiredIngredients } from '../components-smart/RequiredIngredients';
 import { AutoSaveForm } from '../components/AutoSaveForm';
@@ -78,6 +78,9 @@ export function RecipeView() {
                     <RecipeControlSimple
                       name="unit"
                       as={Dropdown}
+                      // options is a property of Dropdown
+                      // Chakra knows that but for some reason typescript complains
+                      // @ts-ignore see above
                       options={RecipeUnit}
                     />
                   </InputRightElement>

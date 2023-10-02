@@ -7,7 +7,7 @@ import {
   Tag,
   VStack,
 } from '@chakra-ui/react';
-import React, { PropsWithChildren } from 'react';
+import { PropsWithChildren } from 'react';
 import { DeleteButton } from '../components/DeleteButton';
 import { LinkOverlay } from '../components/Link';
 
@@ -42,7 +42,14 @@ export function SilListItem({
           transition="transform 0.125s ease-out"
           _groupHover={{ transform: 'translateX(0.3rem)' }}
         >
-          <LinkOverlay to={url}>{name}</LinkOverlay>
+          <LinkOverlay
+            // "to" is a property of RouterLink (embeded in Link)
+            // Chakra knows that but for some reason typescript complains
+            // @ts-ignore see above
+            to={url}
+          >
+            {name}
+          </LinkOverlay>
         </Heading>
 
         <HStack>

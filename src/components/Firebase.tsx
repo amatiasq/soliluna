@@ -1,7 +1,7 @@
 import { FirebaseOptions } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
-import React, { PropsWithChildren } from 'react';
+import { PropsWithChildren } from 'react';
 import {
   AuthProvider,
   FirebaseAppProvider,

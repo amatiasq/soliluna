@@ -6,7 +6,7 @@ import {
   StackDivider,
   VStack,
 } from '@chakra-ui/react';
-import React, { PropsWithChildren } from 'react';
+import { PropsWithChildren } from 'react';
 import { FaPlus } from 'react-icons/fa';
 
 interface SilListProps {

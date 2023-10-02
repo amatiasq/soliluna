@@ -1,4 +1,3 @@
-import React from 'react';
 import { Loading } from '../components/Loading';
 import { useFireList } from '../hooks/useFireList';
 import { Cake } from '../model/Cake';

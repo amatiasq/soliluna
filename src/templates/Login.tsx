@@ -1,5 +1,5 @@
 import { GoogleAuthProvider, signInWithRedirect } from 'firebase/auth';
-import React from 'react';
+
 import { Navigate } from 'react-router-dom';
 import { useAuth, useSigninCheck } from 'reactfire';
 

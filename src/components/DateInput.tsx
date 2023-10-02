@@ -1,7 +1,7 @@
 import { forwardRef, Input, InputProps } from '@chakra-ui/react';
 import { Timestamp } from 'firebase/firestore';
 import { useFormikContext } from 'formik';
-import React, { ChangeEvent, useCallback } from 'react';
+import { ChangeEvent, useCallback } from 'react';
 import { date } from '../util/date';
 
 export interface DateInputProps extends InputProps {

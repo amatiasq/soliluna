@@ -1,5 +1,5 @@
 import { Heading, HStack, Icon, IconButton } from '@chakra-ui/react';
-import React from 'react';
+
 import { FaPlus } from 'react-icons/fa';
 import { Loading } from '../components/Loading';
 import { AUTOSAVE_DELAY } from '../constants';

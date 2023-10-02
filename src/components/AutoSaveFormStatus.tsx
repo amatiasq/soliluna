@@ -1,6 +1,6 @@
 import { Icon } from '@chakra-ui/react';
 import { useFormikContext } from 'formik';
-import React from 'react';
+
 import { FaCheck, FaClock, FaSpinner, FaTimes } from 'react-icons/fa';
 import { AutoSaveContext } from '../hooks/useAutoSave';
 

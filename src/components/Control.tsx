@@ -1,15 +1,15 @@
 import { FormControl, forwardRef, Input, InputProps } from '@chakra-ui/react';
 import { useField } from 'formik';
-import React, { useId, useMemo } from 'react';
+import { useId, useMemo } from 'react';
 
 export interface ControlProps<T, Prefix extends string = ''>
   extends Omit<InputProps, 'name'> {
-  name: `${Prefix}${keyof T}`;
+  name: `${Prefix}${Extract<keyof T, string | number>}`;
 }
 
 export function bindControl<T, Prefix extends string = ''>() {
   const Control = forwardRef<ControlProps<T, Prefix>, 'input'>(
-    ({ name, isRequired, children, gridArea, isInvalid, ...rest }, ref) => {
+    ({ name, isRequired, gridArea, isInvalid, ...rest }, ref) => {
       const id = useId();
       const [field, meta] = useField(name as string);
 
@@ -22,6 +22,10 @@ export function bindControl<T, Prefix extends string = ''>() {
           field.onChange(x);
           rest.onChange!(x);
         };
+
+        // This rule is asking to add `field` to the dependencies array
+        // but we only use field.onChange
+        // eslint-disable-next-line react-hooks/exhaustive-deps
       }, [rest.onChange, field.onChange]);
 
       return (

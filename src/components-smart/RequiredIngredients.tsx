@@ -5,7 +5,7 @@ import {
   InputRightAddon,
   InputRightElement,
 } from '@chakra-ui/react';
-import React from 'react';
+
 import { bindControl } from '../components/Control';
 import { DeleteButton } from '../components/DeleteButton';
 import { Dropdown } from '../components/Dropdown';
@@ -86,6 +86,9 @@ export function RequiredIngredients({ gridArea }: RequiredIngredientsProps) {
               gridArea="name"
               name={`ingredients.${index}.id`}
               as={Dropdown}
+              // options is a property of Dropdown
+              // Chakra knows that but for some reason typescript complains
+              // @ts-ignore see above
               options={names}
               isInvalid={isDuplicated}
               onChange={(event) => {
@@ -107,6 +110,9 @@ export function RequiredIngredients({ gridArea }: RequiredIngredientsProps) {
                 <IngredientControl
                   name={`ingredients.${index}.unit`}
                   as={Dropdown}
+                  // options is a property of Dropdown
+                  // Chakra knows that but for some reason typescript complains
+                  // @ts-ignore see above
                   options={units}
                   isDisabled={units.length === 1}
                 />

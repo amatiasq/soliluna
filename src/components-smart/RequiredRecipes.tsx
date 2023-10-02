@@ -6,7 +6,7 @@ import {
   InputRightAddon,
   InputRightElement,
 } from '@chakra-ui/react';
-import React from 'react';
+
 import { bindControl } from '../components/Control';
 import { DeleteButton } from '../components/DeleteButton';
 import { Dropdown } from '../components/Dropdown';
@@ -29,7 +29,7 @@ export interface RequiredRecipesProps {
 
 const RecipeControl = bindControl<RecipeUsage, `recipes.${number}.`>();
 
-export function RequiredRecipes({ gridArea, pax }: RequiredRecipesProps) {
+export function RequiredRecipes({ gridArea }: RequiredRecipesProps) {
   const { data, isLoading } = useFireList<Recipe>('recetas', {
     orderBy: 'name',
   });
@@ -93,6 +93,9 @@ export function RequiredRecipes({ gridArea, pax }: RequiredRecipesProps) {
               gridArea="name"
               name={`recipes.${index}.id`}
               as={Dropdown}
+              // options is a property of Dropdown
+              // Chakra knows that but for some reason typescript complains
+              // @ts-ignore see above
               options={names}
               isInvalid={isDuplicated}
               onChange={(FACU) => {

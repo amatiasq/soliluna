@@ -1,8 +1,8 @@
 import { Box, Checkbox, Grid, HStack, Text } from '@chakra-ui/react';
-import React, { Fragment } from 'react';
+import { Fragment } from 'react';
 import {
-  calculateIngredientWeight,
   IngredientUsage,
+  calculateIngredientWeight,
 } from '../model/IngredientUsage';
 import { printUnit } from '../model/Unit';
 

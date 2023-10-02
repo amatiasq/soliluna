@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loading } from '../components/Loading';
 import { NiceTag } from '../components/NiceTag';

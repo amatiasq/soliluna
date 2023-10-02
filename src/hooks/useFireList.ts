@@ -42,8 +42,8 @@ export function useFireList<T>(
     ...x,
     isLoading: x.status === 'loading',
     col,
-    add: (x: Omit<T, 'id'>) => addDoc<T>(col, x as T),
+    add: (x: Omit<T, 'id'>) => addDoc<T, any>(col, x as T),
     remove: (x: T) =>
-      deleteDoc(doc<T>(firestore as any, path, (x as any)[idField])),
+      deleteDoc(doc<T, any>(firestore as any, path, (x as any)[idField])),
   };
 }

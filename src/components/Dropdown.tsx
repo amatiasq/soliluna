@@ -1,5 +1,4 @@
 import { forwardRef, Select, SelectProps } from '@chakra-ui/react';
-import React from 'react';
 
 type Item = number | string | { value: string; label: string };
 

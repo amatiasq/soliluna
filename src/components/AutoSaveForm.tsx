@@ -1,5 +1,5 @@
 import { Form, Formik, FormikConfig, FormikValues } from 'formik';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { useScheduler } from '../hooks/useScheduler';
 import { toFormikValidate } from '../util/toFormikValidate';

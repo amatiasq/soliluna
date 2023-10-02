@@ -7,7 +7,7 @@ import {
   InputProps,
 } from '@chakra-ui/react';
 import { useField } from 'formik';
-import React, { useId } from 'react';
+import { useId } from 'react';
 
 export interface FormControlProps<T> extends Omit<InputProps, 'name'> {
   name: keyof T;

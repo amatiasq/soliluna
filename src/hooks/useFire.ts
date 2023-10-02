@@ -14,7 +14,7 @@ import { useFirestore, useFirestoreDocData } from 'reactfire';
 
 export function useFire<T>(path: string, ...pathSegments: string[]) {
   const firestore = useFirestore();
-  const ref = doc<T>(firestore as any, path, ...pathSegments);
+  const ref = doc<T, any>(firestore as any, path, ...pathSegments);
   const x = useFirestoreDocData<T>(ref);
 
   return {

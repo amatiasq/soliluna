@@ -10,7 +10,7 @@ import {
   Spacer,
   useDisclosure,
 } from '@chakra-ui/react';
-import React, { useCallback } from 'react';
+import { useCallback } from 'react';
 import { FaTimes } from 'react-icons/fa';
 
 let showModal = true;

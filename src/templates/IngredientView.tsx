@@ -5,7 +5,7 @@ import {
   InputRightAddon,
   InputRightElement,
 } from '@chakra-ui/react';
-import React, { useCallback } from 'react';
+import { useCallback } from 'react';
 import { AutoSaveForm } from '../components/AutoSaveForm';
 import { AutoSaveFormStatus } from '../components/AutoSaveFormStatus';
 import { bindControl } from '../components/Control';
@@ -30,7 +30,6 @@ export interface IngredientViewProps {
 export function IngredientView({
   id,
   delayMs = 1000,
-  gap = 3,
   remove,
 }: IngredientViewProps) {
   const { isLoading, data, set } = useFire<Ingredient>('ingredientes', id);
@@ -63,7 +62,14 @@ export function IngredientView({
         <InputGroup gridArea="size">
           <IngredientControl name="pkgSize" as={NumberInput} />
           <InputRightElement width="4rem">
-            <IngredientControl name="pkgUnit" as={Dropdown} options={Unit} />
+            <IngredientControl
+              name="pkgUnit"
+              as={Dropdown}
+              // options is a property of Dropdown
+              // Chakra knows that but for some reason typescript complains
+              // @ts-ignore see above
+              options={Unit}
+            />
           </InputRightElement>
         </InputGroup>
 

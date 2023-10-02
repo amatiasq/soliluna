@@ -12,7 +12,7 @@ import {
   useId,
 } from '@chakra-ui/react';
 import { FieldArray, useFormikContext } from 'formik';
-import React, { ReactNode } from 'react';
+import { ReactNode } from 'react';
 import { FaPlus } from 'react-icons/fa';
 
 export interface FormListProps<T> extends Omit<StackProps, 'children'> {
