@@ -26,6 +26,7 @@ export interface FormListProps<T> extends Omit<StackProps, 'children'> {
     index: number;
     item: T;
     all: T[];
+    replace: (index: number, value: T) => void;
     remove(): void;
   }) => ReactNode;
 }
@@ -48,7 +49,7 @@ export function FormList<T>({
   return (
     <Box gridArea={gridArea}>
       <FieldArray name={name}>
-        {({ push, remove }) => (
+        {({ push, remove, replace }) => (
           <>
             <FormControl paddingTop={16} paddingBottom={3}>
               <Grid templateColumns="1fr auto">
@@ -84,6 +85,7 @@ export function FormList<T>({
                   index,
                   item,
                   remove: handleRemove,
+                  replace,
                   all: value,
                 });
               })}

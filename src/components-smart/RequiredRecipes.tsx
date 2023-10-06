@@ -54,7 +54,7 @@ export function RequiredRecipes({ gridArea }: RequiredRecipesProps) {
       addLabel="Añadir receta"
       addItem={() => defaultRecipe}
     >
-      {({ index, item, all, remove }) => {
+      {({ index, item, all, remove, replace }) => {
         const recipe = getRecipe(item.id);
         const isDuplicated = all.some((x) => x !== item && x.id === item.id);
 
@@ -63,6 +63,8 @@ export function RequiredRecipes({ gridArea }: RequiredRecipesProps) {
           remove();
           return null;
         }
+
+        console.log(item);
 
         recipe.cost = calculateIngredientsCost(
           recipe.ingredients,
@@ -76,17 +78,13 @@ export function RequiredRecipes({ gridArea }: RequiredRecipesProps) {
             key={index}
             gap="var(--chakra-space-2)"
             gridTemplate={[
-              `
-                "name name name"
+              ` "name name name"
                 "quantity cost remove"
                 "ingredients ingredients ingredients"
-                / 8fr 7fr auto
-              `,
-              `
-                "name quantity cost remove"
+                / 8fr 7fr auto`,
+              ` "name quantity cost remove"
                 "ingredients ingredients ingredients ingredients"
-                / 1fr 8rem 7rem auto
-              `,
+                / 1fr 8rem 7rem auto`,
             ]}
           >
             <RecipeControl
@@ -98,12 +96,11 @@ export function RequiredRecipes({ gridArea }: RequiredRecipesProps) {
               // @ts-ignore see above
               options={names}
               isInvalid={isDuplicated}
-              onChange={(FACU) => {
-                const newRecipe = getRecipe(FACU.target.value as RecipeId);
-                item.name = newRecipe.name;
-                item.amount = newRecipe.amount;
-                item.unit = newRecipe.unit;
-                focusNextInput(FACU);
+              onChange={(event) => {
+                const newRecipeId = event.target.value as RecipeId;
+                const { ingredients: _, ...newRecipe } = getRecipe(newRecipeId);
+                replace(index, newRecipe);
+                focusNextInput(event);
               }}
             />
 

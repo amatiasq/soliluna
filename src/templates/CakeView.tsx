@@ -72,24 +72,20 @@ function CakeForm({ values }: { values: Cake }) {
       <Grid
         gap="var(--chakra-space-2)"
         gridTemplate={[
-          `
-          "name name"
-          "pax cost"
-          "date price"
-          "notes notes"
-          "recipes recipes"
-          "ingredients ingredients"
-          / 1fr 1fr
-        `,
-          `
-          "name name"
-          "pax cost"
-          "date price"
-          "notes notes"
-          "recipes recipes"
-          "ingredients ingredients"
-          / 1fr 2fr
-        `,
+          ` "name name"
+            "pax cost"
+            "date price"
+            "notes notes"
+            "recipes recipes"
+            "ingredients ingredients"
+            / 1fr 1fr`,
+          ` "name name"
+            "pax cost"
+            "date price"
+            "notes notes"
+            "recipes recipes"
+            "ingredients ingredients"
+            / 1fr 2fr`,
         ]}
       >
         <CakeControl gridArea="name" name="name" label="Nombre" autoFocus />

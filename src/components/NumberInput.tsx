@@ -12,8 +12,11 @@ export const NumberInput = forwardRef<NumberInputProps, typeof Input>(
 
     const handleChange = useCallback(
       (e: ChangeEvent<HTMLInputElement>) => {
-        if (!Number.isNaN(e.target.valueAsNumber))
+        if (Number.isNaN(e.target.valueAsNumber)) {
+          formik.setFieldValue(props.name, null);
+        } else {
           formik.setFieldValue(props.name, e.target.valueAsNumber);
+        }
       },
       [formik, props.name]
     );

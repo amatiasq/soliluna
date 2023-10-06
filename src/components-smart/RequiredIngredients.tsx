@@ -19,7 +19,7 @@ import {
   IngredientId,
 } from '../model/Ingredient';
 import { ingredientToUsage, IngredientUsage } from '../model/IngredientUsage';
-import { getConversionsFor, smallestUnit } from '../model/Unit';
+import { getConversionsFor } from '../model/Unit';
 import { focusNextInput } from '../util/focusNextInput';
 import { unkonwnEntity } from '../util/unknownEntity';
 
@@ -54,7 +54,7 @@ export function RequiredIngredients({ gridArea }: RequiredIngredientsProps) {
       addLabel="Añadir ingrediente"
       addItem={() => ingredientToUsage(defaultIngredient)}
     >
-      {({ index, item, all, remove }) => {
+      {({ index, item, all, remove, replace }) => {
         const ingredient = getIngredient(item.id);
         const isDuplicated = all.some((x) => x !== item && x.id === item.id);
 
@@ -72,14 +72,11 @@ export function RequiredIngredients({ gridArea }: RequiredIngredientsProps) {
             key={index}
             gap="var(--chakra-space-2)"
             gridTemplate={[
-              `
-                "name name name"
+              ` "name name name"
                 "quantity cost remove"
                 / 8fr 7fr auto`,
-              `
-                "name quantity cost remove"
-                / 1fr 8rem 7rem auto
-              `,
+              ` "name quantity cost remove"
+                / 1fr 8rem 7rem auto`,
             ]}
           >
             <IngredientControl
@@ -92,11 +89,11 @@ export function RequiredIngredients({ gridArea }: RequiredIngredientsProps) {
               options={names}
               isInvalid={isDuplicated}
               onChange={(event) => {
-                const newIng = getIngredient(
-                  event.target.value as IngredientId
-                );
-                item.name = newIng.name;
-                item.unit = smallestUnit(newIng.pkgUnit);
+                const newIngId = event.target.value as IngredientId;
+                const newIng = getIngredient(newIngId);
+                const newItem = ingredientToUsage(newIng);
+                newItem.amount = item.amount;
+                replace(index, newItem);
                 focusNextInput(event);
               }}
             />
