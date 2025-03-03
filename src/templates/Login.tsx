@@ -1,4 +1,4 @@
-import { GoogleAuthProvider, signInWithRedirect } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 
 import { Navigate } from 'react-router-dom';
 import { useAuth, useSigninCheck } from 'reactfire';
@@ -13,7 +13,7 @@ export function Login() {
   }
 
   if (!signInCheckResult.signedIn) {
-    signInWithRedirect(auth, new GoogleAuthProvider());
+    signInWithPopup(auth, new GoogleAuthProvider());
     return null;
   }
 
