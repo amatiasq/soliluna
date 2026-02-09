@@ -1,0 +1,276 @@
+/* ─── Page header ──────────────────────────────────────────────── */
+
+.pageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.pageTitle {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--color-text);
+}
+
+.backLink {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+/* ─── Add button ───────────────────────────────────────────────── */
+
+.addButton {
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-full);
+  width: 36px;
+  height: 36px;
+  font-size: 1.4rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  box-shadow: var(--shadow-sm);
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.addButton:hover {
+  background: var(--color-primary-hover);
+  box-shadow: var(--shadow-md);
+}
+
+/* ─── Form row (inline row of inputs) ──────────────────────────── */
+
+.formRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-border-light);
+  flex-wrap: wrap;
+}
+
+.formRow:last-child {
+  border-bottom: none;
+}
+
+/* ─── Inputs ───────────────────────────────────────────────────── */
+
+.input {
+  background: var(--color-input-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.input:focus {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-focus);
+}
+
+.inputName {
+  composes: input;
+  flex: 1;
+  min-width: 100px;
+}
+
+.inputNumber {
+  composes: input;
+  width: 80px;
+  flex-shrink: 0;
+}
+
+.inputDate {
+  composes: input;
+  width: 150px;
+}
+
+.inputNotes {
+  composes: input;
+  width: 100%;
+  min-height: 60px;
+  resize: vertical;
+}
+
+.select {
+  composes: input;
+  width: auto;
+  min-width: 60px;
+  cursor: pointer;
+}
+
+/* ─── List items (clickable rows) ──────────────────────────────── */
+
+.listItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-bottom: 1px solid var(--color-border-light);
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.12s;
+}
+
+.listItem:hover {
+  background-color: var(--color-bg-secondary);
+}
+
+.listItemName {
+  flex: 1;
+  font-weight: 500;
+}
+
+.listItemMeta {
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+/* ─── Section within a detail page ─────────────────────────────── */
+
+.section {
+  margin-top: 24px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.sectionTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--color-text);
+}
+
+/* ─── Cost summary ─────────────────────────────────────────────── */
+
+.costSummary {
+  margin-top: 24px;
+  padding: 14px;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+}
+
+.costRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  color: var(--color-text-secondary);
+}
+
+.costTotal {
+  font-weight: 700;
+  color: var(--color-text);
+  border-top: 1px solid var(--color-border);
+  padding-top: 8px;
+  margin-top: 4px;
+}
+
+/* ─── Delete zone at bottom ────────────────────────────────────── */
+
+.dangerZone {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border-light);
+}
+
+/* ─── Delete inline button ─────────────────────────────────────── */
+
+.deleteInline {
+  background: none;
+  border: none;
+  color: var(--color-error);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: color 0.12s, background 0.12s;
+}
+
+.deleteInline:hover {
+  color: var(--color-error-hover);
+  background: rgba(229, 57, 53, 0.08);
+}
+
+/* ─── Loading & error ──────────────────────────────────────────── */
+
+.loading {
+  text-align: center;
+  padding: 32px;
+  color: var(--color-text-muted);
+}
+
+.error {
+  text-align: center;
+  padding: 32px;
+  color: var(--color-error);
+}
+
+/* ─── Responsive: compact mobile ───────────────────────────────── */
+
+@media (max-width: 500px) {
+  .formRow {
+    flex-wrap: nowrap;
+    gap: 4px;
+    padding: 4px 0;
+    border-bottom: none;
+    overflow: hidden;
+  }
+
+  .input {
+    padding: 5px 6px;
+    font-size: 0.82rem;
+    min-width: 0;
+  }
+
+  .inputName {
+    flex: 1 1 0;
+  }
+
+  .inputNumber {
+    width: 52px;
+    flex: 0 0 52px;
+  }
+
+  .select {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .inputDate {
+    width: auto;
+    flex: 1 1 0;
+  }
+
+  .listItem {
+    gap: 8px;
+    padding: 10px 8px;
+  }
+
+  .listItemMeta {
+    font-size: 0.8rem;
+  }
+}

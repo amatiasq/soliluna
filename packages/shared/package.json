@@ -1,0 +1,21 @@
+{
+  "name": "@soliluna/shared",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./model": "./src/model/index.ts",
+    "./calc": "./src/calc/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}

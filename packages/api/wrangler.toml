@@ -1,0 +1,27 @@
+name = "soliluna-api"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+preview_urls = false
+
+
+[assets]
+directory = "../web/dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "soliluna"
+database_id = "76098ef5-9ecc-47ce-a99e-1a6ed9f89472"
+migrations_dir = "src/db/migrations"
+
+[durable_objects]
+bindings = [
+  { name = "SYNC_HUB", class_name = "SyncHub" }
+]
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["SyncHub"]
