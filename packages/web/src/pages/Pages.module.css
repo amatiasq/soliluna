@@ -188,6 +188,46 @@
   margin-top: 4px;
 }
 
+/* ─── Recipe ingredient breakdown ──────────────────────────────── */
+
+.recipeIngredients {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 0;
+  padding: 4px 0 8px 12px;
+  width: 100%;
+}
+
+.recipeIngredientItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  padding: 2px 0;
+  width: 100%;
+}
+
+.recipeIngredientItem input[type="checkbox"] {
+  margin: 0;
+  cursor: pointer;
+}
+
+.recipeIngredientAmount {
+  min-width: 60px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.recipeTotal {
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+  text-align: right;
+  padding: 4px 0;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
 /* ─── Delete zone at bottom ────────────────────────────────────── */
 
 .dangerZone {

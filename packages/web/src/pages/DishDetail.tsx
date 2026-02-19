@@ -8,6 +8,7 @@ import type {
   RecipeUsageResolved,
   RecipeUnit,
   Multiplier,
+  Unit,
 } from '@soliluna/shared';
 import { calculateIngredientCost, calculateRecipeCost, MultiplierValues } from '@soliluna/shared';
 import * as api from '../services/api';
@@ -20,6 +21,31 @@ import { DeleteButton } from '../components/DeleteButton';
 import { NumberInput } from '../components/NumberInput';
 import { UnitSelect } from '../components/UnitSelect';
 import styles from './Pages.module.css';
+
+const TO_GRAMS: Partial<Record<Unit, number>> = {
+  g: 1,
+  kg: 1000,
+  ml: 1,
+  l: 1000,
+};
+
+function formatAmount(value: number): string {
+  if (value >= 100) return Math.round(value).toString();
+  return parseFloat(value.toFixed(1)).toString();
+}
+
+function loadChecks(dishId: string): Set<string> {
+  try {
+    const raw = localStorage.getItem(`dish-checks-${dishId}`);
+    return raw ? new Set(JSON.parse(raw)) : new Set();
+  } catch {
+    return new Set();
+  }
+}
+
+function saveChecks(dishId: string, checks: Set<string>): void {
+  localStorage.setItem(`dish-checks-${dishId}`, JSON.stringify([...checks]));
+}
 
 /**
  * Detail/edit page for a single dish.
@@ -57,6 +83,20 @@ export function DishDetail() {
   const [multiplier, setMultiplier] = useState<Multiplier>(1);
   const [ingredients, setIngredients] = useState<IngredientUsageResolved[]>([]);
   const [recipes, setRecipes] = useState<RecipeUsageResolved[]>([]);
+  const [checkedIngredients, setCheckedIngredients] = useState<Set<string>>(() => loadChecks(id ?? ''));
+
+  const toggleCheck = useCallback(
+    (key: string) => {
+      setCheckedIngredients((prev) => {
+        const next = new Set(prev);
+        if (next.has(key)) next.delete(key);
+        else next.add(key);
+        if (id) saveChecks(id, next);
+        return next;
+      });
+    },
+    [id],
+  );
 
   // Populate editable fields once the dish loads
   useEffect(() => {
@@ -395,43 +435,85 @@ export function DishDetail() {
           </button>
         </div>
 
-        {recipesWithCost.map((usage, index) => (
-          <div key={index} className={styles.formRow}>
-            <select
-              className={styles.select}
-              value={usage.recipeId}
-              onChange={(event) => handleRecipeChange(index, 'recipeId', event.target.value)}
-            >
-              {allRecipes.map((rec) => (
-                <option key={rec.id} value={rec.id}>
-                  {rec.name}
-                </option>
-              ))}
-            </select>
-            <NumberInput
-              className={styles.inputNumber}
-              value={usage.amount}
-              onChange={(value) => handleRecipeChange(index, 'amount', value)}
-              min={0}
-              step="any"
-              placeholder="Cantidad"
-            />
-            <UnitSelect
-              className={styles.select}
-              value={usage.unit}
-              onChange={(value) => handleRecipeChange(index, 'unit', value)}
-              kind="recipe"
-            />
-            <CostDisplay cents={usage.cost} />
-            <button
-              className={styles.deleteInline}
-              onClick={() => handleRemoveRecipe(index)}
-              title="Eliminar"
-            >
-              ✗
-            </button>
-          </div>
-        ))}
+        {recipesWithCost.map((usage, index) => {
+          const catalogRecipe = allRecipes.find((r) => r.id === usage.recipeId);
+          const scale = catalogRecipe && catalogRecipe.yieldAmount > 0
+            ? usage.amount / catalogRecipe.yieldAmount
+            : 0;
+          const scaledIngredients = catalogRecipe?.ingredients.map((ing) => ({
+            ...ing,
+            scaledAmount: ing.amount * scale,
+          })) ?? [];
+          const totalGrams = scaledIngredients.reduce((sum, ing) => {
+            const factor = TO_GRAMS[ing.unit as Unit];
+            return factor != null ? sum + ing.scaledAmount * factor : sum;
+          }, 0);
+
+          return (
+            <div key={index}>
+              <div className={styles.formRow}>
+                <select
+                  className={styles.select}
+                  value={usage.recipeId}
+                  onChange={(event) => handleRecipeChange(index, 'recipeId', event.target.value)}
+                >
+                  {allRecipes.map((rec) => (
+                    <option key={rec.id} value={rec.id}>
+                      {rec.name}
+                    </option>
+                  ))}
+                </select>
+                <NumberInput
+                  className={styles.inputNumber}
+                  value={usage.amount}
+                  onChange={(value) => handleRecipeChange(index, 'amount', value)}
+                  min={0}
+                  step="any"
+                  placeholder="Cantidad"
+                />
+                <UnitSelect
+                  className={styles.select}
+                  value={usage.unit}
+                  onChange={(value) => handleRecipeChange(index, 'unit', value)}
+                  kind="recipe"
+                />
+                <CostDisplay cents={usage.cost} />
+                <button
+                  className={styles.deleteInline}
+                  onClick={() => handleRemoveRecipe(index)}
+                  title="Eliminar"
+                >
+                  ✗
+                </button>
+              </div>
+              {scaledIngredients.length > 0 && (
+                <div className={styles.recipeIngredients}>
+                  {scaledIngredients.map((ing, ingIdx) => {
+                    const checkKey = `${usage.recipeId}-${ing.ingredientId}`;
+                    return (
+                      <label key={ingIdx} className={styles.recipeIngredientItem}>
+                        <span className={styles.recipeIngredientAmount}>
+                          {formatAmount(ing.scaledAmount)} {ing.unit}
+                        </span>
+                        <input
+                          type="checkbox"
+                          checked={checkedIngredients.has(checkKey)}
+                          onChange={() => toggleCheck(checkKey)}
+                        />
+                        {ing.name}
+                      </label>
+                    );
+                  })}
+                  {totalGrams > 0 && (
+                    <div className={styles.recipeTotal}>
+                      Total {formatAmount(totalGrams)} g
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
 
         {recipesWithCost.length === 0 && (
           <p className={styles.loading}>Sin recetas.</p>
