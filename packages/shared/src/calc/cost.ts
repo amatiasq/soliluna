@@ -1,5 +1,5 @@
 import type { Ingredient, IngredientUsage } from '../model/ingredient.js';
-import type { Recipe, RecipeUsage } from '../model/recipe.js';
+import type { Recipe } from '../model/recipe.js';
 import type { Unit } from '../model/units.js';
 import { convert } from './conversion.js';
 

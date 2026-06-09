@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { UnitSchema, QuantitySchema } from './units.js';
+import { UnitSchema } from './units.js';
 
 // -- Ingrediente (como se almacena en DB / devuelve la API) --
 
