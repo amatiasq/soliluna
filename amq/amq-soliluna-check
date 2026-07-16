@@ -1,0 +1,33 @@
+#!/bin/bash -e
+
+# amq soliluna check — full local CI check for soliluna.
+#
+# Mirrors .github/workflows/ci-soliluna.yml so a green CI run and a local
+# `amq soliluna check` cannot diverge:
+#   install deps (pnpm) + typecheck (pnpm -r typecheck across all packages).
+#
+# Runtime: pnpm workspaces (Node). Install uses --frozen-lockfile (like CI) and
+# is skipped when node_modules is already present so repeated local runs stay
+# fast; CI has no node_modules and installs fresh.
+
+if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+  self="$(basename "$0")"
+  echo "Usage: $self"
+  echo
+  echo "Runs the full CI check for soliluna (pnpm workspaces):"
+  echo "  1. pnpm install --frozen-lockfile (skipped when node_modules exists)"
+  echo "  2. pnpm -r typecheck"
+  echo
+  echo "Mirrors .github/workflows/ci-soliluna.yml. Does nothing else."
+  exit 0
+fi
+
+if [ ! -d node_modules ]; then
+  echo "==> pnpm install --frozen-lockfile"
+  pnpm install --frozen-lockfile
+else
+  echo "==> deps present, skipping pnpm install"
+fi
+
+echo "==> typecheck (pnpm -r typecheck)"
+pnpm -r typecheck
