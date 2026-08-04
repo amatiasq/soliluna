@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@soliluna/shared": "workspace:*",
-    "hono": "^4.12.25",
+    "hono": "^4.13.0",
     "zod": "^3.24.0"
   },
   "devDependencies": {
