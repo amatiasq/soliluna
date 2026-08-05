@@ -1,33 +1,27 @@
-# Soliluna v3 — Guía para Claude y Desarrolladores
+# soliluna — AGENTS.md
 
-## Principio fundamental: Legibilidad ante todo
+Gestión de costes de recetas para un obrador. Es un servicio real para terceros,
+así que la fiabilidad manda: ver *Data safety* en el [`AGENTS.md`](../AGENTS.md)
+raíz, que rige también aquí.
 
-El código debe ser **comprensible por un humano que no lo ha escrito**. Quien venga a leerlo debe poder:
-- Abrir cualquier archivo y entender qué hace en <30 segundos.
-- Encontrar la funcionalidad que busca sin grep exhaustivo.
-- Modificar una parte sin romper otra por efecto sorpresa.
+Monorepo pnpm con tres paquetes:
 
-## Reglas de código
+- **shared** — esquemas Zod + cálculo de costes. Lo usan API y web.
+- **api** — Cloudflare Worker + Hono + D1 (SQLite).
+- **web** — React 19 + Vite + react-hook-form + CSS Modules. Offline con
+  IndexedDB (`idb`) + Service Worker (Workbox) + outbox. Tiempo real con Durable
+  Objects + SSE.
 
-### Nombrado
-- Nombres descriptivos, no abreviados. `calculateIngredientCost`, no `calcIngCost`.
-- Archivos nombrados por lo que contienen: `ingredients.ts` tiene rutas de ingredientes, `cost.ts` tiene cálculos de coste.
-- Un archivo = una responsabilidad clara.
+Tests: Vitest (unidad) + Playwright (E2E). Arquitectura en detalle: `docs/`.
 
-### Estructura
-- Cada carpeta tiene un propósito obvio (ver ARCHITECTURE.md §3).
-- Los imports van de más general a más específico: lib externa → shared → local.
-- Exports explícitos; evitar `export *` excepto en archivos `index.ts` de barrel.
+## Convenciones de datos
 
-### Funciones
-- Funciones pequeñas que hacen una cosa.
-- Comentarios solo cuando el "por qué" no es obvio. El código explica el "qué".
-- Tipos explícitos en las firmas de funciones públicas. TypeScript infiere el resto.
-
-### Datos
-- Precios siempre en **céntimos** (enteros). Formatear a euros solo para mostrar.
-- IDs son ULIDs (strings). Se generan en el cliente.
-- Timestamps ISO 8601 con milisegundos.
+- **Precios siempre en céntimos** (enteros). Se formatean a euros sólo para
+  mostrar.
+- **IDs son ULIDs** (strings), generados en el cliente.
+- **Timestamps ISO 8601** con milisegundos.
+- El coste se calcula en los dos lados: el front para respuesta instantánea, la
+  API como canónico.
 
 ## Dónde encontrar cada cosa
 
@@ -44,14 +38,11 @@ El código debe ser **comprensible por un humano que no lo ha escrito**. Quien v
 | Hooks (auto-save, entity) | `packages/web/src/hooks/` |
 | Cache IndexedDB + sync | `packages/web/src/services/` |
 | Service Worker | `packages/web/src/sw.ts` |
-| Documentación de arquitectura | `docs/` |
 
-## Stack
+## Convenciones de código
 
-- **Monorepo**: pnpm workspaces
-- **Shared**: Zod schemas + cálculos (usado por API y web)
-- **API**: Cloudflare Worker + Hono + D1 (SQLite)
-- **Web**: React 19 + Vite + react-hook-form + CSS Modules
-- **Offline**: IndexedDB (idb) + Service Worker (Workbox) + outbox
-- **Real-time**: Durable Objects + SSE (Fase 4)
-- **Tests**: Vitest (unit) + Playwright (E2E)
+Además del `AGENTS.md` raíz:
+
+- Los imports van de más general a más específico: lib externa → shared → local.
+- Exports explícitos; `export *` sólo en los `index.ts` de barrel, y los tipos
+  con `export type`.
