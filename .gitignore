@@ -10,3 +10,4 @@ packages/web/dev-dist
 *.db
 *.db-wal
 *.db-shm
+backups/

@@ -22,6 +22,7 @@
 
 IMAGE="docker.amatiasq.com/soliluna"
 SERVICE="${SOLILUNA_SERVICE:-soliluna}"
+STAMP="$(date +%Y-%m-%dT%H-%M-%S)"
 
 # La auth es fail-closed: sin el secreto en el .env del servidor, la app entera
 # responde 503. Se comprueba antes de construir nada.
@@ -44,11 +45,12 @@ echo "==> typecheck"
 pnpm -r typecheck
 
 echo "==> building image (linux/amd64)"
-docker buildx build --platform linux/amd64 --pull -t "$IMAGE:latest" .
+docker buildx build --platform linux/amd64 --pull -t "$IMAGE:latest" -t "$IMAGE:$STAMP" .
 docker tag "$IMAGE:latest" "$IMAGE:$(date +%Y-%m-%dT%H-%M-%S)"
 
 echo "==> pushing image"
 docker push "$IMAGE:latest"
+docker push "$IMAGE:$STAMP"
 
 echo "==> ship infra (compose + scripts) to VPS as '$SERVICE'"
 amq deploy-infra "$SERVICE"

@@ -1,0 +1,36 @@
+#!/bin/bash -e
+
+# Copia el SQLite de producción a backups/, y de ahí al NAS.
+#
+# infra/backup.sh se ejecuta EN EL SERVIDOR por tubería, igual que en conta: el
+# fichero local es la fuente, así que nunca se ejecuta una copia vieja del
+# servidor. `bash -es`: -s lee el script de stdin, -e recupera el errexit que el
+# shebang, al no ejecutarse, no pone.
+#
+# Sin --delete: la rotación de 30 días del servidor no debe llevarse por delante
+# el archivo largo.
+
+SERVICE="${SOLILUNA_SERVICE:-soliluna}"
+
+case "$1" in
+  -h|--help|help)
+    echo "Usage: amq soliluna backup"
+    echo ''
+    echo "Snapshots the production SQLite (VACUUM INTO) and brings it to"
+    echo "backups/, then copies it to the NAS if it is reachable."
+    echo ''
+    echo "Config (env): SOLILUNA_SERVICE (default soliluna)"
+    exit 0
+    ;;
+esac
+
+echo "==> snapshotting production db on the VPS"
+amq vps ssh "VPS_DIR=\$HOME/vps SERVICE=$SERVICE bash -es" < infra/backup.sh
+
+mkdir -p backups
+echo "==> pulling dumps down"
+amq vps rsync -v \
+  --include='soliluna-*.db.gz' --exclude='*' \
+  ":vps/docker/$SERVICE/backups/" backups/
+
+amq nas backup soliluna backups/soliluna-*.db.gz
