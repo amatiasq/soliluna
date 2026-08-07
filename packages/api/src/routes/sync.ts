@@ -1,11 +1,9 @@
 import { Hono } from 'hono';
-import type { Env } from '../types.js';
-import { getChangesSince } from '../db/queries.js';
+import type { Env } from '../types.ts';
+import { getChangesSince } from '../db/queries.ts';
 
 const sync = new Hono<{ Bindings: Env }>();
 
-// GET /api/sync/changes?since=<ISO timestamp>
-// Returns all entities modified after the given timestamp, plus deletions.
 sync.get('/changes', async (c) => {
   const since = c.req.query('since');
 

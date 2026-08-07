@@ -1,22 +1,36 @@
-version: '3.5'
+# soliluna v3 — un solo contenedor: la app y la API en el mismo origen.
+#
+# El host sale del `.env`, no está escrito aquí, porque estos mismos ficheros
+# sirven la carpeta de staging y la de producción durante la migración. El `.env`
+# lo pone `amq soliluna secrets` y **nunca** se sube con rsync.
 
 services:
-  nginx:
-    container_name: amq-soliluna
-    image: nginx
+  app:
+    image: docker.amatiasq.com/soliluna:latest
     restart: unless-stopped
-    expose:
-      - 80
-    volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - ./logs:/var/log/nginx
     environment:
-      - VIRTUAL_HOST=soliluna.amatiasq.com
-      - LETSENCRYPT_HOST=soliluna.amatiasq.com
-      - LETSENCRYPT_EMAIL=amatiasq@gmail.com
+      # Sin este secreto la app responde 503 a todo, a propósito.
+      SOLILUNA_AUTH: ${SOLILUNA_AUTH}
+      VIRTUAL_HOST: ${SOLILUNA_HOST}
+      VIRTUAL_PORT: 80
+      LETSENCRYPT_HOST: ${SOLILUNA_HOST}
+      LETSENCRYPT_EMAIL: amatiasq@gmail.com
+    volumes:
+      # Los datos. `amq deploy-infra` excluye `data/` del rsync justamente para
+      # que una copia local no pueda pisar la del servidor.
+      - ./data:/data
+    healthcheck:
+      # /api/health es la única ruta pública; el resto pediría credenciales.
+      test: ['CMD', 'node', '-e', "fetch('http://localhost/api/health').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     networks:
       - exposed
 
+# Sin `container_name`: así estos ficheros valen igual en la carpeta de staging y
+# en la de producción, sin editar nada. Los scripts usan `docker compose exec`.
 networks:
   exposed:
     external: true

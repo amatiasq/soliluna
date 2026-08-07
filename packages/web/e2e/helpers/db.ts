@@ -4,6 +4,9 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const API = 'http://localhost:8787';
+// Playwright's httpCredentials only covers the browser context; these helpers
+// talk to the API from Node, so they carry the header themselves.
+const AUTH = `Basic ${Buffer.from('dev:dev').toString('base64')}`;
 
 async function fetchWithRetry(
   url: string,
@@ -24,7 +27,10 @@ async function fetchWithRetry(
 }
 
 export async function resetDB() {
-  await fetchWithRetry(`${API}/api/__test/reset`, { method: 'POST' });
+  await fetchWithRetry(`${API}/api/__test/reset`, {
+    method: 'POST',
+    headers: { Authorization: AUTH },
+  });
 }
 
 export async function seedDB() {
@@ -33,7 +39,7 @@ export async function seedDB() {
   const sql = fs.readFileSync(sqlPath, 'utf-8');
   await fetchWithRetry(`${API}/api/__test/seed`, {
     method: 'POST',
-    headers: { 'Content-Type': 'text/plain' },
+    headers: { 'Content-Type': 'text/plain', Authorization: AUTH },
     body: sql,
   });
   // Let the server stabilize after bulk operations

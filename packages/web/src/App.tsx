@@ -56,14 +56,11 @@ function Layout() {
 }
 
 export function App() {
-  // Connect to SSE for real-time sync with other devices
   useRealtimeSync();
 
   useEffect(() => {
-    // Pre-fill IndexedDB with the latest data on app start
     preloadAllData();
 
-    // Set up online/offline and visibility listeners for background sync
     const cleanup = setupSyncListeners();
     return cleanup;
   }, []);

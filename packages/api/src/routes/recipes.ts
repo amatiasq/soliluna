@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { RecipeCreateSchema, RecipeUpdateSchema } from '@soliluna/shared';
-import type { Env } from '../types.js';
+import type { Env } from '../types.ts';
 import {
   listRecipes,
   getRecipe,
@@ -8,18 +8,16 @@ import {
   updateRecipe,
   deleteRecipe,
   getUpdatedAt,
-} from '../db/queries.js';
-import { notifyChange } from '../notify.js';
+} from '../db/queries.ts';
+import { notifyChange } from '../notify.ts';
 
 const recipes = new Hono<{ Bindings: Env }>();
 
-// GET /api/recipes — List all recipes with ingredients and costs
 recipes.get('/', async (c) => {
   const data = await listRecipes(c.env.DB);
   return c.json({ data });
 });
 
-// POST /api/recipes — Create a new recipe (metadata only, no ingredients yet)
 recipes.post('/', async (c) => {
   const body = await c.req.json();
   const parsed = RecipeCreateSchema.safeParse(body);
@@ -31,12 +29,11 @@ recipes.post('/', async (c) => {
   const data = await createRecipe(c.env.DB, parsed.data);
 
   const clientId = c.req.header('X-Client-Id');
-  await notifyChange(c.env, 'recipes', data.id, 'create', clientId);
+  notifyChange(c.env, 'recipes', data.id, 'create', clientId);
 
   return c.json({ data }, 201);
 });
 
-// GET /api/recipes/:id — Get one recipe with ingredients and costs
 recipes.get('/:id', async (c) => {
   const data = await getRecipe(c.env.DB, c.req.param('id'));
 
@@ -47,7 +44,6 @@ recipes.get('/:id', async (c) => {
   return c.json({ data });
 });
 
-// PUT /api/recipes/:id — Update metadata + replace ingredient list
 recipes.put('/:id', async (c) => {
   const id = c.req.param('id');
   const body = await c.req.json();
@@ -71,12 +67,11 @@ recipes.put('/:id', async (c) => {
   const data = await updateRecipe(c.env.DB, id, parsed.data);
 
   const clientId = c.req.header('X-Client-Id');
-  await notifyChange(c.env, 'recipes', id, 'update', clientId);
+  notifyChange(c.env, 'recipes', id, 'update', clientId);
 
   return c.json({ data });
 });
 
-// DELETE /api/recipes/:id — Delete a recipe (fails if used in dishes)
 recipes.delete('/:id', async (c) => {
   const id = c.req.param('id');
 
@@ -92,7 +87,7 @@ recipes.delete('/:id', async (c) => {
   }
 
   const clientId = c.req.header('X-Client-Id');
-  await notifyChange(c.env, 'recipes', id, 'delete', clientId);
+  notifyChange(c.env, 'recipes', id, 'delete', clientId);
 
   return c.json({ data: { id } });
 });

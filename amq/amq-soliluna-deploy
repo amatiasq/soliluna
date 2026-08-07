@@ -1,14 +1,56 @@
 #!/bin/bash -e
 
-# Ship soliluna infra (compose + nginx.conf) to the VPS and restart.
-# soliluna is a static nginx site — no image to build; deploy just syncs the
-# reverse-proxy config and recreates the container.
+# amq soliluna deploy — construye la imagen, la sube, y reinicia el contenedor en
+# el VPS. Un solo proceso Node sirve la app y la API en el mismo origen, así que
+# esto es todo el despliegue: no queda nada en Cloudflare.
 #
-# Run via `amq soliluna deploy`.
+# La imagen se construye para linux/amd64 (esta máquina es arm64) y se etiqueta
+# también con la fecha, para poder volver atrás.
+#
+# La app no se compila: Node ejecuta el TypeScript directamente. Lo único que se
+# construye es el bundle de la web, y eso pasa dentro del Dockerfile.
+#
+# Config (env):
+#   SOLILUNA_SERVICE   carpeta del stack en el VPS (default: soliluna)
+#
+# Mientras dure la migración a la v3 se despliega a la carpeta de staging:
+#
+#   SOLILUNA_SERVICE=soliluna-v3 amq soliluna deploy
+#
+# Ver .agents/plans/soliluna-al-vps.md. `soliluna` es la carpeta que sirve el
+# dominio bueno, y hasta el corte ahí vive todavía la v2 (../infra-v2/).
 
-SERVICE="soliluna"
+IMAGE="docker.amatiasq.com/soliluna"
+SERVICE="${SOLILUNA_SERVICE:-soliluna}"
 
-echo "==> ship infra (compose + nginx) to VPS"
+# La auth es fail-closed: sin el secreto en el .env del servidor, la app entera
+# responde 503. Se comprueba antes de construir nada.
+if ! amq vps ssh "grep -q '^SOLILUNA_AUTH=' ~/vps/docker/$SERVICE/.env" 2>/dev/null; then
+  echo "Falta SOLILUNA_AUTH en ~/vps/docker/$SERVICE/.env; la app daría 503 en todo." >&2
+  echo "Ponlo con: amq soliluna secrets" >&2
+  exit 1
+fi
+
+if ! amq vps ssh "grep -q '^SOLILUNA_HOST=' ~/vps/docker/$SERVICE/.env" 2>/dev/null; then
+  echo "Falta SOLILUNA_HOST en ~/vps/docker/$SERVICE/.env; compose no sabría qué dominio servir." >&2
+  echo "Ponlo con: amq soliluna secrets" >&2
+  exit 1
+fi
+
+echo "==> tests (unit)"
+pnpm test:unit
+
+echo "==> typecheck"
+pnpm -r typecheck
+
+echo "==> building image (linux/amd64)"
+docker buildx build --platform linux/amd64 --pull -t "$IMAGE:latest" .
+docker tag "$IMAGE:latest" "$IMAGE:$(date +%Y-%m-%dT%H-%M-%S)"
+
+echo "==> pushing image"
+docker push "$IMAGE:latest"
+
+echo "==> ship infra (compose + scripts) to VPS as '$SERVICE'"
 amq deploy-infra "$SERVICE"
 
 echo "==> pull-and-restart on VPS"

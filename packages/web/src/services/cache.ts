@@ -8,20 +8,13 @@ import {
   StoreName,
 } from './db';
 
-// -- Types --
-
 type EntityOfStore<S extends StoreName> = S extends 'ingredients'
   ? Ingredient
   : S extends 'recipes'
     ? Recipe
     : Dish;
 
-/**
- * Fetches a list of entities using a stale-while-revalidate strategy:
- * 1. Read cached data from IndexedDB immediately
- * 2. Attempt to fetch fresh data from the API
- * 3. If the API fails, fall back to the cached data
- */
+/** Stale-while-revalidate over IndexedDB: fresh if the API answers, cached if not. */
 export async function fetchWithCache<S extends StoreName>(
   storeName: S,
   apiFn: () => Promise<EntityOfStore<S>[]>,
@@ -33,7 +26,6 @@ export async function fetchWithCache<S extends StoreName>(
     await putAllInStore(storeName, fresh as never[]);
     return { data: fresh, fromCache: false };
   } catch {
-    // If offline or the API fails, return whatever we have in cache
     if (cached.length > 0) {
       return { data: cached, fromCache: true };
     }
@@ -41,10 +33,6 @@ export async function fetchWithCache<S extends StoreName>(
   }
 }
 
-/**
- * Fetches a single entity by id with cache fallback.
- * Same stale-while-revalidate pattern as fetchWithCache.
- */
 export async function fetchOneWithCache<S extends StoreName>(
   storeName: S,
   id: string,
@@ -64,14 +52,7 @@ export async function fetchOneWithCache<S extends StoreName>(
   }
 }
 
-/**
- * Saves an entity optimistically: writes to IndexedDB first, then
- * tries the API. If the API call fails while offline, the mutation
- * is queued in the outbox for later sync.
- *
- * Returns 'synced' if the API call succeeded, or 'offline' if it
- * was queued for later.
- */
+/** Optimistic: IndexedDB first, then the API; offline the mutation goes to the outbox. */
 export async function saveWithOfflineFallback<S extends StoreName>(
   storeName: S,
   item: EntityOfStore<S>,
@@ -80,7 +61,6 @@ export async function saveWithOfflineFallback<S extends StoreName>(
   body: unknown,
   apiFn: () => Promise<unknown>,
 ): Promise<'synced' | 'offline'> {
-  // Optimistic: write to IndexedDB immediately
   await putInStore(storeName, item as never);
 
   try {
@@ -91,7 +71,6 @@ export async function saveWithOfflineFallback<S extends StoreName>(
       await addToOutbox({ method, url, body });
       return 'offline';
     }
-    // If we are online but the API failed, it is a real error
     throw error;
   }
 }

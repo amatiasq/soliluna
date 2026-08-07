@@ -1,10 +1,10 @@
 export {
   convert,
-} from './conversion.js';
+} from './conversion.ts';
 
 export {
   calculateIngredientCost,
   resolveIngredientCosts,
   calculateRecipeCost,
   formatCents,
-} from './cost.js';
+} from './cost.ts';

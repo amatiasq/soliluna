@@ -6,6 +6,11 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      // injectManifest, not the generated worker: authentication has to run
+      // before the app shell is served. See src/sw.ts.
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
       registerType: 'autoUpdate',
       includeAssets: ['icons/*.svg'],
       manifest: {
@@ -25,10 +30,8 @@ export default defineConfig({
           },
         ],
       },
-      workbox: {
-        navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/api\//],
-        runtimeCaching: [],
+      injectManifest: {
+        globPatterns: ['**/*.{js,css,html,svg,webmanifest}'],
       },
     }),
   ],

@@ -1,11 +1,6 @@
-import type { Unit } from '../model/units.js';
+import type { Unit } from '../model/units.ts';
 
-/**
- * Factores de conversión a unidad base.
- * Volumen: base = ml
- * Peso: base = g
- * Unidad: no convertible
- */
+/** A unidad base: ml para volumen, g para peso. `u` no convierte. */
 const TO_BASE: Record<string, number> = {
   ml: 1,
   l: 1000,
@@ -23,11 +18,7 @@ function sameFamily(a: Unit, b: Unit): boolean {
   return false;
 }
 
-/**
- * Convierte una cantidad de una unidad a otra.
- * Solo funciona entre unidades de la misma familia (peso↔peso, volumen↔volumen).
- * Lanza error si las unidades son incompatibles.
- */
+/** Lanza si las unidades no son de la misma familia. */
 export function convert(amount: number, from: Unit, to: Unit): number {
   if (from === to) return amount;
 
@@ -35,9 +26,7 @@ export function convert(amount: number, from: Unit, to: Unit): number {
     throw new Error(`Cannot convert ${from} to ${to}: incompatible units`);
   }
 
-  if (from === 'u' || to === 'u') {
-    return amount; // u→u, identity
-  }
+  if (from === 'u' || to === 'u') return amount;
 
   const baseAmount = amount * TO_BASE[from];
   return baseAmount / TO_BASE[to];

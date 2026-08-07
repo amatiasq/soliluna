@@ -1,26 +1,15 @@
-import type { Env } from './types.js';
+import type { Env } from './types.ts';
+import type { SyncAction, SyncEntity } from './sync-hub.ts';
 
-/**
- * Notifies connected clients about a data change via the SyncHub Durable Object.
- * Called after every successful POST/PUT/DELETE operation.
- */
-export async function notifyChange(
+/** Returns void so it can't be awaited: a stuck SSE client hung every mutation. */
+export function notifyChange(
   env: Env,
-  entity: 'ingredients' | 'recipes' | 'dishes',
+  entity: SyncEntity,
   id: string,
-  action: 'create' | 'update' | 'delete',
+  action: SyncAction,
   senderClientId?: string,
-): Promise<void> {
-  try {
-    const doId = env.SYNC_HUB.idFromName('global');
-    const hub = env.SYNC_HUB.get(doId);
-    await hub.fetch(new Request('http://internal/notify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ entity, id, action, senderClientId }),
-    }));
-  } catch (err) {
-    // Don't fail the mutation if SSE notification fails
+): void {
+  env.SYNC_HUB.notify(entity, id, action, senderClientId).catch((err) => {
     console.error('Failed to notify SyncHub:', err);
-  }
+  });
 }

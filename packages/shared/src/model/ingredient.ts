@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { UnitSchema } from './units.js';
+import { UnitSchema } from './units.ts';
 
 // -- Ingrediente (como se almacena en DB / devuelve la API) --
 
@@ -53,7 +53,7 @@ export type IngredientUsage = z.infer<typeof IngredientUsageSchema>;
 
 export const IngredientUsageResolvedSchema = IngredientUsageSchema.extend({
   name: z.string(),
-  cost: z.number().int(), // céntimos calculados
+  cost: z.number().int().nullable(), // céntimos calculados; null = no calculable
 });
 
 export type IngredientUsageResolved = z.infer<typeof IngredientUsageResolvedSchema>;

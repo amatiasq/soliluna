@@ -18,16 +18,10 @@ import { NumberInput } from '../components/NumberInput';
 import { UnitSelect } from '../components/UnitSelect';
 import styles from './Pages.module.css';
 
-/**
- * Detail/edit page for a single recipe.
- * Top section: name, yield amount, yield unit (all auto-saved).
- * Ingredients section: add/remove ingredients with cost calculation.
- */
 export function RecipeDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // Fetch recipe and ingredient catalog with cache support
   const {
     data: recipe,
     isLoading: recipeLoading,
@@ -39,16 +33,14 @@ export function RecipeDetail() {
     isLoading: ingredientsLoading,
   } = useEntityList<Ingredient>('ingredients', api.getIngredients);
 
-  // Track the latest recipe from server (for updatedAt conflict detection)
+  // For the updatedAt conflict check.
   const [latestRecipe, setLatestRecipe] = useState<Recipe | null>(null);
 
-  // Editable fields
   const [name, setName] = useState('');
   const [yieldAmount, setYieldAmount] = useState(1);
   const [yieldUnit, setYieldUnit] = useState<RecipeUnit>('kg');
   const [ingredients, setIngredients] = useState<IngredientUsageResolved[]>([]);
 
-  // Populate editable fields once the recipe loads
   useEffect(() => {
     if (!recipe) return;
     setLatestRecipe(recipe);
@@ -58,7 +50,6 @@ export function RecipeDetail() {
     setIngredients(recipe.ingredients);
   }, [recipe]);
 
-  // Recalculate costs client-side when ingredients change
   const ingredientsWithCost = useMemo(() => {
     return ingredients.map((usage) => {
       const catalogIngredient = allIngredients.find((i) => i.id === usage.ingredientId);
@@ -69,12 +60,19 @@ export function RecipeDetail() {
     });
   }, [ingredients, allIngredients]);
 
-  const totalCost = useMemo(
-    () => ingredientsWithCost.reduce((sum, ing) => sum + Math.max(0, ing.cost), 0),
-    [ingredientsWithCost],
-  );
+  // Los no calculables cuentan como cero, y aparte para poder avisar.
+  const { totalCost, missingCost } = useMemo(() => {
+    let total = 0;
+    let missing = 0;
 
-  // Auto-save form values
+    for (const ing of ingredientsWithCost) {
+      if (ing.cost === null) missing++;
+      else total += ing.cost;
+    }
+
+    return { totalCost: total, missingCost: missing };
+  }, [ingredientsWithCost]);
+
   const formValues = useMemo(
     () => ({
       name,
@@ -101,7 +99,6 @@ export function RecipeDetail() {
         updatedAt: latestRecipe.updatedAt,
       };
 
-      // Build an optimistic Recipe for local cache
       const optimisticRecipe: Recipe = {
         ...latestRecipe,
         name: values.name,
@@ -223,7 +220,7 @@ export function RecipeDetail() {
       <div className={styles.costSummary}>
         <div className={styles.costRow}>
           <span>Coste total:</span>
-          <CostDisplay cents={totalCost} />
+          <CostDisplay cents={totalCost} missing={missingCost} />
         </div>
       </div>
 

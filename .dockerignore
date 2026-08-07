@@ -1,0 +1,13 @@
+node_modules
+packages/*/node_modules
+packages/web/dist
+packages/web/dev-dist
+test-results
+*.db
+*.db-wal
+*.db-shm
+.dev.vars
+infra
+infra-v2
+.agents
+docs

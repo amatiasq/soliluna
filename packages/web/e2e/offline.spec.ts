@@ -175,6 +175,53 @@ test.describe('Offline', () => {
     expect(putResults[0].status).toBe(200);
   });
 
+  test('un 401 al reconectar no descarta los cambios en cola', async ({ page }) => {
+    await page.goto('/ingredients');
+    await expect(page.locator('input[placeholder="Nombre"]').first()).toBeVisible();
+    await page.waitForTimeout(1000);
+
+    // Edit offline so the change lands in the outbox
+    await page.context().setOffline(true);
+    await page.locator('input[placeholder="Nombre"]').first().fill('Sobrevive al 401');
+    await page.waitForTimeout(1500);
+    await expect(page.locator('[title="Guardado localmente (sin conexion)"]').first()).toBeVisible({
+      timeout: 5000,
+    });
+
+    // First reconnection: the API answers 401, as if the credentials were forgotten
+    let rejected = 0;
+    await page.route('**/api/ingredients/*', async (route) => {
+      if (route.request().method() !== 'PUT') return route.continue();
+      rejected++;
+      await route.fulfill({ status: 401, body: 'Authentication required.' });
+    });
+
+    await page.context().setOffline(false);
+    await expect(async () => {
+      expect(rejected).toBeGreaterThanOrEqual(1);
+    }).toPass({ timeout: 15000 });
+    await page.waitForTimeout(2000);
+
+    // Second reconnection, credentials working again: the change must still be queued
+    await page.unroute('**/api/ingredients/*');
+    const flushDone = page.waitForResponse(
+      (res) => res.request().method() === 'PUT' && res.url().includes('/api/ingredients/'),
+      { timeout: 15000 },
+    );
+    await page.context().setOffline(true);
+    await page.context().setOffline(false);
+    expect((await flushDone).status()).toBe(200);
+
+    await page.waitForTimeout(2000);
+    await page.reload();
+    await expect(page.locator('input[placeholder="Nombre"]').first()).toBeVisible();
+    await expect(async () => {
+      const inputs = await page.locator('input[placeholder="Nombre"]').all();
+      const names = await Promise.all(inputs.map((input) => input.inputValue()));
+      expect(names).toContain('Sobrevive al 401');
+    }).toPass({ timeout: 15000 });
+  });
+
   test('cola de cambios offline se sincroniza en orden', async ({ page }) => {
     await page.goto('/ingredients');
     await expect(page.locator('input[placeholder="Nombre"]').first()).toBeVisible();

@@ -8,7 +8,9 @@ async function getInputValues(page, placeholder: string): Promise<string[]> {
 
 test.describe('Ingredientes', () => {
   test.beforeEach(async ({ page }) => {
-    // Block SSE connections to prevent wrangler Durable Object instability
+    // These specs don't cover realtime, so the SSE stream is cut. It was blocked
+    // because wrangler's Durable Object was unstable; it stays blocked because an
+    // open stream buys these specs nothing.
     await page.route('**/api/events*', (route) => route.abort());
     await seedDB();
   });

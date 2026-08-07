@@ -4,21 +4,22 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
-    "wrangler:deploy": "wrangler deploy",
+    "dev": "node --watch src/dev.ts",
+    "dev:once": "node src/dev.ts",
+    "start": "node src/serve.ts",
     "typecheck": "tsc --noEmit",
-    "db:migrate:local": "wrangler d1 migrations apply soliluna --local",
-    "db:migrate:remote": "wrangler d1 migrations apply soliluna --remote"
+    "db:migrate": "node src/db/migrate.ts",
+    "test": "vitest run"
   },
   "dependencies": {
+    "@hono/node-server": "^2.1.0",
     "@soliluna/shared": "workspace:*",
     "hono": "^4.13.0",
     "zod": "^3.24.0"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250109.0",
+    "@types/node": "^24.0.0",
     "typescript": "^5.7.0",
-    "wrangler": "^4.0.0"
+    "vitest": "^4.1.10"
   }
 }

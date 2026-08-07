@@ -1,2 +1,2 @@
-export * from './model/index.js';
-export * from './calc/index.js';
+export * from './model/index.ts';
+export * from './calc/index.ts';

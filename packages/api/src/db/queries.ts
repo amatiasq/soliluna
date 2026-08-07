@@ -16,6 +16,7 @@ import {
   calculateRecipeCost,
 } from '@soliluna/shared';
 import type { Unit, RecipeUnit } from '@soliluna/shared';
+import type { D1Database, D1PreparedStatement } from './d1.ts';
 
 // ─── Row types (snake_case as stored in D1) ─────────────────────────
 
@@ -128,7 +129,7 @@ function resolveIngredientUsageCost(
       amount: usage.amount,
       unit: usage.unit as Unit,
       name: '(desconocido)',
-      cost: -1,
+      cost: null,
     };
   }
 
@@ -147,9 +148,7 @@ function resolveIngredientUsageCost(
 
 const NOW_SQL = "strftime('%Y-%m-%dT%H:%M:%f','now')";
 
-// ═══════════════════════════════════════════════════════════════════
-// INGREDIENTS
-// ═══════════════════════════════════════════════════════════════════
+// ─── Ingredients ───
 
 export async function listIngredients(db: D1Database): Promise<Ingredient[]> {
   const { results } = await db
@@ -232,40 +231,124 @@ export async function deleteIngredient(
   return null;
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// RECIPES
-// ═══════════════════════════════════════════════════════════════════
+// ─── In-Memory Assembly ───
+// Resolving relations row by row is one query per recipe and several per dish,
+// which is how /api/sync/changes fired a thousand subrequests and died with a
+// 500. Everything below takes whole tables and joins them here.
 
-/** Builds a full Recipe object (with resolved ingredients and cost) from a recipe row. */
+function groupBy<T>(rows: T[], key: (row: T) => string): Map<string, T[]> {
+  const groups = new Map<string, T[]>();
+  for (const row of rows) {
+    const arr = groups.get(key(row));
+    if (arr) arr.push(row);
+    else groups.set(key(row), [row]);
+  }
+  return groups;
+}
+
+function indexIngredients(rows: IngredientRow[]): Map<string, Ingredient> {
+  return new Map(rows.map((row) => [row.id, ingredientFromRow(row)]));
+}
+
+function assembleRecipe(
+  row: RecipeRow,
+  riRows: RecipeIngredientRow[],
+  ingredientMap: Map<string, Ingredient>,
+): Recipe {
+  const ingredients: IngredientUsageResolved[] = riRows.map((ri) =>
+    resolveIngredientUsageCost(ri, ingredientMap),
+  );
+  const cost = ingredients.reduce((sum, ing) => sum + (ing.cost ?? 0), 0);
+
+  return { ...recipeMetadataFromRow(row), ingredients, cost };
+}
+
+function assembleRecipeMap(
+  recipeRows: RecipeRow[],
+  riRows: RecipeIngredientRow[],
+  ingredientMap: Map<string, Ingredient>,
+): Map<string, Recipe> {
+  const riByRecipe = groupBy(riRows, (ri) => ri.recipe_id);
+  return new Map(
+    recipeRows.map((row) => [
+      row.id,
+      assembleRecipe(row, riByRecipe.get(row.id) ?? [], ingredientMap),
+    ]),
+  );
+}
+
+function assembleDish(
+  row: DishRow,
+  diRows: DishIngredientRow[],
+  drRows: DishRecipeRow[],
+  recipeMap: Map<string, Recipe>,
+  ingredientMap: Map<string, Ingredient>,
+): Dish {
+  const metadata = dishMetadataFromRow(row);
+
+  const ingredients: IngredientUsageResolved[] = diRows.map((di) =>
+    resolveIngredientUsageCost(di, ingredientMap),
+  );
+
+  const recipes: RecipeUsageResolved[] = drRows.map((dr) => {
+    const recipe = recipeMap.get(dr.recipe_id);
+
+    if (!recipe) {
+      return {
+        recipeId: dr.recipe_id,
+        amount: dr.amount,
+        unit: dr.unit as RecipeUnit,
+        name: '(desconocido)',
+        cost: -1,
+      };
+    }
+
+    return {
+      recipeId: dr.recipe_id,
+      amount: dr.amount,
+      unit: dr.unit as RecipeUnit,
+      name: recipe.name,
+      cost: calculateRecipeCost(recipe, dr.amount),
+    };
+  });
+
+  const ingredientsCost = ingredients.reduce((sum, ing) => sum + (ing.cost ?? 0), 0);
+  const recipesCost = recipes.reduce((sum, rec) => sum + (rec.cost ?? 0), 0);
+  const baseCost = ingredientsCost + recipesCost;
+
+  return { ...metadata, ingredients, recipes, baseCost, finalPrice: baseCost * metadata.multiplier };
+}
+
+// ─── Recipes ───
+
 async function buildRecipeWithIngredients(
   db: D1Database,
   row: RecipeRow,
 ): Promise<Recipe> {
-  const metadata = recipeMetadataFromRow(row);
-
   const { results: riRows } = await db
     .prepare('SELECT * FROM recipe_ingredients WHERE recipe_id = ?')
     .bind(row.id)
     .all<RecipeIngredientRow>();
 
-  const ingredientIds = riRows.map((ri) => ri.ingredient_id);
-  const ingredientMap = await fetchIngredientMap(db, ingredientIds);
+  const ingredientMap = await fetchIngredientMap(db, riRows.map((ri) => ri.ingredient_id));
 
-  const ingredients: IngredientUsageResolved[] = riRows.map((ri) =>
-    resolveIngredientUsageCost(ri, ingredientMap),
-  );
-
-  const cost = ingredients.reduce((sum, ing) => sum + (ing.cost >= 0 ? ing.cost : 0), 0);
-
-  return { ...metadata, ingredients, cost };
+  return assembleRecipe(row, riRows, ingredientMap);
 }
 
 export async function listRecipes(db: D1Database): Promise<Recipe[]> {
-  const { results: rows } = await db
-    .prepare('SELECT * FROM recipes ORDER BY name')
-    .all<RecipeRow>();
+  const [recipeResult, riResult, ingredientResult] = await db.batch([
+    db.prepare('SELECT * FROM recipes ORDER BY name'),
+    db.prepare('SELECT * FROM recipe_ingredients'),
+    db.prepare('SELECT * FROM ingredients'),
+  ]);
 
-  return Promise.all(rows.map((row) => buildRecipeWithIngredients(db, row)));
+  const recipeRows = recipeResult.results as unknown as RecipeRow[];
+  const riByRecipe = groupBy(riResult.results as unknown as RecipeIngredientRow[], (ri) => ri.recipe_id);
+  const ingredientMap = indexIngredients(ingredientResult.results as unknown as IngredientRow[]);
+
+  return recipeRows.map((row) =>
+    assembleRecipe(row, riByRecipe.get(row.id) ?? [], ingredientMap),
+  );
 }
 
 export async function getRecipe(db: D1Database, id: string): Promise<Recipe | null> {
@@ -349,88 +432,32 @@ export async function deleteRecipe(
   return null;
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// DISHES
-// ═══════════════════════════════════════════════════════════════════
+// ─── Dishes ───
 
-/** Builds a full Dish object (with resolved ingredients, recipes, and costs). */
 async function buildDishWithRelations(
   db: D1Database,
   row: DishRow,
 ): Promise<Dish> {
-  const metadata = dishMetadataFromRow(row);
+  const [diResult, drResult] = await db.batch([
+    db.prepare('SELECT * FROM dish_ingredients WHERE dish_id = ?').bind(row.id),
+    db.prepare('SELECT * FROM dish_recipes WHERE dish_id = ?').bind(row.id),
+  ]);
 
-  // Fetch direct ingredient associations
-  const { results: diRows } = await db
-    .prepare('SELECT * FROM dish_ingredients WHERE dish_id = ?')
-    .bind(row.id)
-    .all<DishIngredientRow>();
+  const diRows = diResult.results as unknown as DishIngredientRow[];
+  const drRows = drResult.results as unknown as DishRecipeRow[];
 
-  // Fetch recipe associations
-  const { results: drRows } = await db
-    .prepare('SELECT * FROM dish_recipes WHERE dish_id = ?')
-    .bind(row.id)
-    .all<DishRecipeRow>();
-
-  // Resolve direct ingredient costs
-  const ingredientIds = diRows.map((di) => di.ingredient_id);
-  const ingredientMap = await fetchIngredientMap(db, ingredientIds);
-
-  const ingredients: IngredientUsageResolved[] = diRows.map((di) =>
-    resolveIngredientUsageCost(di, ingredientMap),
+  const recipes = await Promise.all(drRows.map((dr) => getRecipe(db, dr.recipe_id)));
+  const recipeMap = new Map(
+    recipes.filter((recipe): recipe is Recipe => recipe !== null).map((recipe) => [recipe.id, recipe]),
   );
 
-  // Resolve recipe costs
-  const recipes: RecipeUsageResolved[] = await Promise.all(
-    drRows.map(async (dr) => {
-      const recipe = await getRecipe(db, dr.recipe_id);
+  const ingredientMap = await fetchIngredientMap(db, diRows.map((di) => di.ingredient_id));
 
-      if (!recipe) {
-        return {
-          recipeId: dr.recipe_id,
-          amount: dr.amount,
-          unit: dr.unit as RecipeUnit,
-          name: '(desconocido)',
-          cost: -1,
-        };
-      }
-
-      const cost = calculateRecipeCost(recipe, dr.amount);
-
-      return {
-        recipeId: dr.recipe_id,
-        amount: dr.amount,
-        unit: dr.unit as RecipeUnit,
-        name: recipe.name,
-        cost,
-      };
-    }),
-  );
-
-  const ingredientsCost = ingredients.reduce(
-    (sum, ing) => sum + (ing.cost >= 0 ? ing.cost : 0),
-    0,
-  );
-
-  const recipesCost = recipes.reduce(
-    (sum, rec) => sum + (rec.cost >= 0 ? rec.cost : 0),
-    0,
-  );
-
-  const baseCost = ingredientsCost + recipesCost;
-  const finalPrice = baseCost * metadata.multiplier;
-
-  return {
-    ...metadata,
-    ingredients,
-    recipes,
-    baseCost,
-    finalPrice,
-  };
+  return assembleDish(row, diRows, drRows, recipeMap, ingredientMap);
 }
 
 export async function listDishes(db: D1Database): Promise<Dish[]> {
-  // Batch: fetch all dishes + all join tables + all recipes + all ingredients in 5 queries
+  // Six queries whatever the size: the join happens in assembleDish.
   const [dishResult, diResult, drResult, recipeResult, riResult, ingredientResult] =
     await db.batch([
       db.prepare(
@@ -447,97 +474,24 @@ export async function listDishes(db: D1Database): Promise<Dish[]> {
     ]);
 
   const dishRows = dishResult.results as unknown as DishRow[];
-  const allDI = drResult.results as unknown as DishRecipeRow[];
-  const allDIng = diResult.results as unknown as DishIngredientRow[];
-  const recipeRows = recipeResult.results as unknown as RecipeRow[];
-  const allRI = riResult.results as unknown as RecipeIngredientRow[];
-  const ingredientRows = ingredientResult.results as unknown as IngredientRow[];
+  const ingredientMap = indexIngredients(ingredientResult.results as unknown as IngredientRow[]);
+  const recipeMap = assembleRecipeMap(
+    recipeResult.results as unknown as RecipeRow[],
+    riResult.results as unknown as RecipeIngredientRow[],
+    ingredientMap,
+  );
+  const diByDish = groupBy(diResult.results as unknown as DishIngredientRow[], (di) => di.dish_id);
+  const drByDish = groupBy(drResult.results as unknown as DishRecipeRow[], (dr) => dr.dish_id);
 
-  // Build lookup maps
-  const ingredientMap = new Map<string, Ingredient>();
-  for (const row of ingredientRows) {
-    ingredientMap.set(row.id, ingredientFromRow(row));
-  }
-
-  // Group recipe_ingredients by recipe_id
-  const riByRecipe = new Map<string, RecipeIngredientRow[]>();
-  for (const ri of allRI) {
-    const arr = riByRecipe.get(ri.recipe_id);
-    if (arr) arr.push(ri);
-    else riByRecipe.set(ri.recipe_id, [ri]);
-  }
-
-  // Build recipe map (with resolved ingredients and cost)
-  const recipeMap = new Map<string, Recipe>();
-  for (const row of recipeRows) {
-    const metadata = recipeMetadataFromRow(row);
-    const riRows = riByRecipe.get(row.id) ?? [];
-    const ingredients: IngredientUsageResolved[] = riRows.map((ri) =>
-      resolveIngredientUsageCost(ri, ingredientMap),
-    );
-    const cost = ingredients.reduce((sum, ing) => sum + (ing.cost >= 0 ? ing.cost : 0), 0);
-    recipeMap.set(row.id, { ...metadata, ingredients, cost });
-  }
-
-  // Group dish_ingredients and dish_recipes by dish_id
-  const dIngByDish = new Map<string, DishIngredientRow[]>();
-  for (const di of allDIng) {
-    const arr = dIngByDish.get(di.dish_id);
-    if (arr) arr.push(di);
-    else dIngByDish.set(di.dish_id, [di]);
-  }
-
-  const dRecByDish = new Map<string, DishRecipeRow[]>();
-  for (const dr of allDI) {
-    const arr = dRecByDish.get(dr.dish_id);
-    if (arr) arr.push(dr);
-    else dRecByDish.set(dr.dish_id, [dr]);
-  }
-
-  // Assemble dishes
-  return dishRows.map((row) => {
-    const metadata = dishMetadataFromRow(row);
-    const diRows = dIngByDish.get(row.id) ?? [];
-    const drRows = dRecByDish.get(row.id) ?? [];
-
-    const ingredients: IngredientUsageResolved[] = diRows.map((di) =>
-      resolveIngredientUsageCost(di, ingredientMap),
-    );
-
-    const recipes: RecipeUsageResolved[] = drRows.map((dr) => {
-      const recipe = recipeMap.get(dr.recipe_id);
-      if (!recipe) {
-        return {
-          recipeId: dr.recipe_id,
-          amount: dr.amount,
-          unit: dr.unit as RecipeUnit,
-          name: '(desconocido)',
-          cost: -1,
-        };
-      }
-      const cost = calculateRecipeCost(recipe, dr.amount);
-      return {
-        recipeId: dr.recipe_id,
-        amount: dr.amount,
-        unit: dr.unit as RecipeUnit,
-        name: recipe.name,
-        cost,
-      };
-    });
-
-    const ingredientsCost = ingredients.reduce(
-      (sum, ing) => sum + (ing.cost >= 0 ? ing.cost : 0),
-      0,
-    );
-    const recipesCost = recipes.reduce(
-      (sum, rec) => sum + (rec.cost >= 0 ? rec.cost : 0),
-      0,
-    );
-    const baseCost = ingredientsCost + recipesCost;
-    const finalPrice = baseCost * metadata.multiplier;
-
-    return { ...metadata, ingredients, recipes, baseCost, finalPrice };
-  });
+  return dishRows.map((row) =>
+    assembleDish(
+      row,
+      diByDish.get(row.id) ?? [],
+      drByDish.get(row.id) ?? [],
+      recipeMap,
+      ingredientMap,
+    ),
+  );
 }
 
 export async function getDish(db: D1Database, id: string): Promise<Dish | null> {
@@ -634,9 +588,7 @@ export async function deleteDish(db: D1Database, id: string): Promise<void> {
   ]);
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// SYNC
-// ═══════════════════════════════════════════════════════════════════
+// ─── Sync ───
 
 export interface SyncChangesResult {
   ingredients: Ingredient[];
@@ -649,30 +601,59 @@ export async function getChangesSince(
   db: D1Database,
   since: string,
 ): Promise<SyncChangesResult> {
-  // Fetch all entities modified since the timestamp
-  const [ingredientRows, recipeRows, dishRows, deletionRows] = await db.batch([
+  // The changed rows, plus whole tables: a dish that changed can use a recipe
+  // that did not, and its cost still has to resolve. Nine queries, always.
+  const [
+    changedIngredients,
+    changedRecipes,
+    changedDishes,
+    deletionResult,
+    ingredientResult,
+    recipeResult,
+    riResult,
+    diResult,
+    drResult,
+  ] = await db.batch([
     db.prepare('SELECT * FROM ingredients WHERE updated_at > ? ORDER BY name').bind(since),
     db.prepare('SELECT * FROM recipes WHERE updated_at > ? ORDER BY name').bind(since),
     db.prepare('SELECT * FROM dishes WHERE updated_at > ? ORDER BY name').bind(since),
     db.prepare('SELECT * FROM deletions WHERE deleted_at > ?').bind(since),
+    db.prepare('SELECT * FROM ingredients'),
+    db.prepare('SELECT * FROM recipes'),
+    db.prepare('SELECT * FROM recipe_ingredients'),
+    db.prepare('SELECT * FROM dish_ingredients'),
+    db.prepare('SELECT * FROM dish_recipes'),
   ]);
 
-  const ingredients = (ingredientRows.results as unknown as IngredientRow[]).map(ingredientFromRow);
+  const ingredientMap = indexIngredients(ingredientResult.results as unknown as IngredientRow[]);
+  const riByRecipe = groupBy(riResult.results as unknown as RecipeIngredientRow[], (ri) => ri.recipe_id);
+  const recipeMap = assembleRecipeMap(
+    recipeResult.results as unknown as RecipeRow[],
+    riResult.results as unknown as RecipeIngredientRow[],
+    ingredientMap,
+  );
+  const diByDish = groupBy(diResult.results as unknown as DishIngredientRow[], (di) => di.dish_id);
+  const drByDish = groupBy(drResult.results as unknown as DishRecipeRow[], (dr) => dr.dish_id);
 
-  // Build full recipe and dish objects with resolved relations
-  const recipes = await Promise.all(
-    (recipeRows.results as unknown as RecipeRow[]).map((row) =>
-      buildRecipeWithIngredients(db, row),
+  const ingredients = (changedIngredients.results as unknown as IngredientRow[]).map(
+    ingredientFromRow,
+  );
+
+  const recipes = (changedRecipes.results as unknown as RecipeRow[]).map((row) =>
+    assembleRecipe(row, riByRecipe.get(row.id) ?? [], ingredientMap),
+  );
+
+  const dishes = (changedDishes.results as unknown as DishRow[]).map((row) =>
+    assembleDish(
+      row,
+      diByDish.get(row.id) ?? [],
+      drByDish.get(row.id) ?? [],
+      recipeMap,
+      ingredientMap,
     ),
   );
 
-  const dishes = await Promise.all(
-    (dishRows.results as unknown as DishRow[]).map((row) =>
-      buildDishWithRelations(db, row),
-    ),
-  );
-
-  const deletions = (deletionRows.results as unknown as DeletionRow[]).map((row) => ({
+  const deletions = (deletionResult.results as unknown as DeletionRow[]).map((row) => ({
     entity: row.entity,
     entityId: row.entity_id,
     deletedAt: row.deleted_at,
@@ -681,9 +662,7 @@ export async function getChangesSince(
   return { ingredients, recipes, dishes, deletions };
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// CONFLICT DETECTION
-// ═══════════════════════════════════════════════════════════════════
+// ─── Conflict Detection ───
 
 export async function getUpdatedAt(
   db: D1Database,
@@ -698,9 +677,7 @@ export async function getUpdatedAt(
   return row?.updated_at ?? null;
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// HELPERS
-// ═══════════════════════════════════════════════════════════════════
+// ─── Helpers ───
 
 /** Fetches multiple ingredients by ID and returns them as a Map for fast lookup. */
 async function fetchIngredientMap(
@@ -710,7 +687,6 @@ async function fetchIngredientMap(
   const map = new Map<string, Ingredient>();
   if (ids.length === 0) return map;
 
-  // Fetch all ingredients at once using IN clause
   const placeholders = ids.map(() => '?').join(',');
   const { results } = await db
     .prepare(`SELECT * FROM ingredients WHERE id IN (${placeholders})`)

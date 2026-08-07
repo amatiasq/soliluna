@@ -1,13 +1,7 @@
 import { ulid } from 'ulid';
 
-/**
- * Unique identifier for this browser tab/instance.
- * Sent as X-Client-Id header on mutations so the server
- * can exclude the sender from SSE broadcasts.
- */
+/** Sent as X-Client-Id so the server leaves the sender out of its broadcasts. */
 export const CLIENT_ID = ulid();
-
-// -- Types --
 
 export interface InvalidateEvent {
   entity: 'ingredients' | 'recipes' | 'dishes';
@@ -17,20 +11,12 @@ export interface InvalidateEvent {
 
 type InvalidateHandler = (event: InvalidateEvent) => void;
 
-// -- SSE connection manager --
-
 let eventSource: EventSource | null = null;
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 const listeners = new Set<InvalidateHandler>();
 
 const RECONNECT_DELAY_MS = 3_000;
 
-/**
- * Opens an SSE connection to the server. When a change notification arrives,
- * all registered handlers are called with the event data.
- *
- * Automatically reconnects on disconnect after a short delay.
- */
 function connect(): void {
   if (eventSource) return;
 
@@ -48,7 +34,6 @@ function connect(): void {
   });
 
   eventSource.onerror = () => {
-    // Connection lost — close and schedule a reconnect
     eventSource?.close();
     eventSource = null;
 
@@ -63,13 +48,7 @@ function connect(): void {
   };
 }
 
-/**
- * Registers a handler for invalidation events.
- * The SSE connection is opened when the first handler registers
- * and closed when the last handler unregisters.
- *
- * Returns an unsubscribe function.
- */
+/** Connects on the first handler, disconnects when the last unsubscribes. */
 export function onInvalidate(handler: InvalidateHandler): () => void {
   listeners.add(handler);
 

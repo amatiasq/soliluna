@@ -47,15 +47,10 @@ function saveChecks(dishId: string, checks: Set<string>): void {
   localStorage.setItem(`dish-checks-${dishId}`, JSON.stringify([...checks]));
 }
 
-/**
- * Detail/edit page for a single dish.
- * Includes metadata, ingredients, recipes, and cost summary.
- */
 export function DishDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // Fetch dish, ingredient catalog, and recipe catalog with cache support
   const {
     data: dish,
     isLoading: dishLoading,
@@ -72,10 +67,9 @@ export function DishDetail() {
     isLoading: recipesLoading,
   } = useEntityList<Recipe>('recipes', api.getRecipes);
 
-  // Track the latest dish from server (for updatedAt conflict detection)
+  // For the updatedAt conflict check.
   const [latestDish, setLatestDish] = useState<Dish | null>(null);
 
-  // Editable fields
   const [name, setName] = useState('');
   const [pax, setPax] = useState(1);
   const [deliveryDate, setDeliveryDate] = useState<string>('');
@@ -98,7 +92,6 @@ export function DishDetail() {
     [id],
   );
 
-  // Populate editable fields once the dish loads
   useEffect(() => {
     if (!dish) return;
     setLatestDish(dish);
@@ -111,7 +104,6 @@ export function DishDetail() {
     setRecipes(dish.recipes);
   }, [dish]);
 
-  // Recalculate ingredient costs client-side
   const ingredientsWithCost = useMemo(() => {
     return ingredients.map((usage) => {
       const catalogIngredient = allIngredients.find((i) => i.id === usage.ingredientId);
@@ -122,7 +114,6 @@ export function DishDetail() {
     });
   }, [ingredients, allIngredients]);
 
-  // Recalculate recipe costs client-side
   const recipesWithCost = useMemo(() => {
     return recipes.map((usage) => {
       const catalogRecipe = allRecipes.find((r) => r.id === usage.recipeId);
@@ -133,20 +124,27 @@ export function DishDetail() {
     });
   }, [recipes, allRecipes]);
 
-  const ingredientsCost = useMemo(
-    () => ingredientsWithCost.reduce((sum, ing) => sum + Math.max(0, ing.cost), 0),
-    [ingredientsWithCost],
-  );
+  // Los no calculables cuentan como cero, y aparte para poder avisar.
+  const { ingredientsCost, missingCost } = useMemo(() => {
+    let total = 0;
+    let missing = 0;
+
+    for (const ing of ingredientsWithCost) {
+      if (ing.cost === null) missing++;
+      else total += ing.cost;
+    }
+
+    return { ingredientsCost: total, missingCost: missing };
+  }, [ingredientsWithCost]);
 
   const recipesCost = useMemo(
-    () => recipesWithCost.reduce((sum, rec) => sum + Math.max(0, rec.cost), 0),
+    () => recipesWithCost.reduce((sum, rec) => sum + (rec.cost ?? 0), 0),
     [recipesWithCost],
   );
 
   const baseCost = ingredientsCost + recipesCost;
   const finalPrice = baseCost * multiplier;
 
-  // Auto-save form values
   const formValues = useMemo(
     () => ({
       name,
@@ -183,7 +181,6 @@ export function DishDetail() {
         updatedAt: latestDish.updatedAt,
       };
 
-      // Build an optimistic Dish for local cache
       const optimisticDish: Dish = {
         ...latestDish,
         name: values.name,
@@ -216,8 +213,6 @@ export function DishDetail() {
   );
 
   const saveState = useAutoSave(formValues, handleSave);
-
-  // -- Ingredient handlers --
 
   const handleAddIngredient = useCallback(() => {
     if (allIngredients.length === 0) return;
@@ -261,8 +256,6 @@ export function DishDetail() {
     },
     [allIngredients],
   );
-
-  // -- Recipe handlers --
 
   const handleAddRecipe = useCallback(() => {
     if (allRecipes.length === 0) return;
@@ -532,11 +525,11 @@ export function DishDetail() {
         </div>
         <div className={styles.costRow}>
           <span>Coste base:</span>
-          <CostDisplay cents={baseCost} />
+          <CostDisplay cents={baseCost} missing={missingCost} />
         </div>
         <div className={`${styles.costRow} ${styles.costTotal}`}>
           <span>Precio final (x{multiplier}):</span>
-          <CostDisplay cents={finalPrice} />
+          <CostDisplay cents={finalPrice} missing={missingCost} />
         </div>
       </div>
 

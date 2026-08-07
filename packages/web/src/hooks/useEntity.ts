@@ -2,8 +2,6 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { getAllFromStore, getFromStore, putAllInStore, putInStore } from '../services/db';
 import type { StoreName } from '../services/db';
 
-// -- List hook --
-
 interface UseEntityListResult<T> {
   data: T[];
   isLoading: boolean;
@@ -11,13 +9,7 @@ interface UseEntityListResult<T> {
   refetch: () => void;
 }
 
-/**
- * Fetches a list of entities with stale-while-revalidate:
- * 1. Show cached data from IndexedDB instantly (no loading spinner).
- * 2. Fetch fresh data from the API in parallel.
- * 3. When the API responds, replace the data and update the cache.
- * 4. If the API fails and we have cache, keep showing cached data silently.
- */
+/** Stale-while-revalidate: the cache renders instantly, the API replaces it. */
 export function useEntityList<T extends { id: string }>(
   storeName: StoreName,
   apiFn: () => Promise<T[]>,
@@ -32,7 +24,7 @@ export function useEntityList<T extends { id: string }>(
   const fetchData = useCallback(() => {
     setError(null);
 
-    // 1. Read cache first (sorted by name to match API's ORDER BY name)
+    // Sorted by name to match the API's ORDER BY.
     const cachePromise = getAllFromStore(storeName)
       .then((cached) => {
         if (cached.length > 0) {
@@ -48,7 +40,6 @@ export function useEntityList<T extends { id: string }>(
       })
       .catch(() => false);
 
-    // 2. Fetch from API in parallel
     apiFnRef.current()
       .then(async (fresh) => {
         setData(fresh);
@@ -56,9 +47,7 @@ export function useEntityList<T extends { id: string }>(
         await putAllInStore(storeName, fresh as never[]);
       })
       .catch(async () => {
-        // Wait for cache read to complete before deciding on error.
-        // Without this, the API can fail before the cache resolves,
-        // causing a false "Error al cargar datos" when data IS cached.
+        // Wait for the cache: the API can fail first and show a false error.
         const hadCachedData = await cachePromise;
         setIsLoading(false);
         if (!hadCachedData) {
@@ -74,8 +63,6 @@ export function useEntityList<T extends { id: string }>(
   return { data, isLoading, error, refetch: fetchData };
 }
 
-// -- Single entity hook --
-
 interface UseEntityResult<T> {
   data: T | null;
   isLoading: boolean;
@@ -83,10 +70,6 @@ interface UseEntityResult<T> {
   refetch: () => void;
 }
 
-/**
- * Fetches a single entity by id with stale-while-revalidate.
- * Same two-step pattern as useEntityList.
- */
 export function useEntity<T extends { id: string }>(
   storeName: StoreName,
   id: string | undefined,
@@ -104,7 +87,6 @@ export function useEntity<T extends { id: string }>(
 
     setError(null);
 
-    // 1. Read cache first
     const cachePromise = getFromStore(storeName, id)
       .then((cached) => {
         if (cached) {
@@ -115,7 +97,6 @@ export function useEntity<T extends { id: string }>(
       })
       .catch(() => false);
 
-    // 2. Fetch from API in parallel
     apiFnRef.current()
       .then(async (fresh) => {
         setData(fresh);

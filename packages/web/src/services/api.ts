@@ -24,8 +24,7 @@ export class ApiError extends Error {
   }
 }
 
-// Deduplicate in-flight GET requests: if a GET to the same path is
-// already pending, reuse its promise instead of firing a second request.
+// Reuses the promise of a GET to the same path that is still in flight.
 const inflight = new Map<string, Promise<unknown>>();
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
@@ -65,8 +64,6 @@ async function doRequest<T>(method: string, path: string, body?: unknown): Promi
   return json.data;
 }
 
-// -- Ingredients --
-
 export function getIngredients(): Promise<Ingredient[]> {
   return request<Ingredient[]>('GET', '/ingredients');
 }
@@ -82,8 +79,6 @@ export function updateIngredient(id: string, data: IngredientUpdate): Promise<In
 export function deleteIngredient(id: string): Promise<void> {
   return request<void>('DELETE', `/ingredients/${id}`);
 }
-
-// -- Recipes --
 
 export function getRecipes(): Promise<Recipe[]> {
   return request<Recipe[]>('GET', '/recipes');
@@ -104,8 +99,6 @@ export function updateRecipe(id: string, data: RecipeUpdate): Promise<Recipe> {
 export function deleteRecipe(id: string): Promise<void> {
   return request<void>('DELETE', `/recipes/${id}`);
 }
-
-// -- Dishes --
 
 export function getDishes(): Promise<Dish[]> {
   return request<Dish[]>('GET', '/dishes');

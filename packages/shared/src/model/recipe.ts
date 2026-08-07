@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { RecipeUnitSchema } from './units.js';
-import { IngredientUsageSchema, IngredientUsageResolvedSchema } from './ingredient.js';
+import { RecipeUnitSchema } from './units.ts';
+import { IngredientUsageSchema, IngredientUsageResolvedSchema } from './ingredient.ts';
 
 // -- Receta (respuesta API, con ingredientes y costes resueltos) --
 

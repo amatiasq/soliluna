@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { DishCreateSchema, DishUpdateSchema } from '@soliluna/shared';
-import type { Env } from '../types.js';
+import type { Env } from '../types.ts';
 import {
   listDishes,
   getDish,
@@ -8,19 +8,16 @@ import {
   updateDish,
   deleteDish,
   getUpdatedAt,
-} from '../db/queries.js';
-import { notifyChange } from '../notify.js';
+} from '../db/queries.ts';
+import { notifyChange } from '../notify.ts';
 
 const dishes = new Hono<{ Bindings: Env }>();
 
-// GET /api/dishes — List all dishes with ingredients, recipes, and costs
-// Order: null delivery_date first, then by date descending
 dishes.get('/', async (c) => {
   const data = await listDishes(c.env.DB);
   return c.json({ data });
 });
 
-// POST /api/dishes — Create a new dish
 dishes.post('/', async (c) => {
   const body = await c.req.json();
   const parsed = DishCreateSchema.safeParse(body);
@@ -32,12 +29,11 @@ dishes.post('/', async (c) => {
   const data = await createDish(c.env.DB, parsed.data);
 
   const clientId = c.req.header('X-Client-Id');
-  await notifyChange(c.env, 'dishes', data.id, 'create', clientId);
+  notifyChange(c.env, 'dishes', data.id, 'create', clientId);
 
   return c.json({ data }, 201);
 });
 
-// GET /api/dishes/:id — Get one dish with everything
 dishes.get('/:id', async (c) => {
   const data = await getDish(c.env.DB, c.req.param('id'));
 
@@ -48,7 +44,6 @@ dishes.get('/:id', async (c) => {
   return c.json({ data });
 });
 
-// PUT /api/dishes/:id — Update metadata + replace ingredients + replace recipes
 dishes.put('/:id', async (c) => {
   const id = c.req.param('id');
   const body = await c.req.json();
@@ -72,12 +67,11 @@ dishes.put('/:id', async (c) => {
   const data = await updateDish(c.env.DB, id, parsed.data);
 
   const clientId = c.req.header('X-Client-Id');
-  await notifyChange(c.env, 'dishes', id, 'update', clientId);
+  notifyChange(c.env, 'dishes', id, 'update', clientId);
 
   return c.json({ data });
 });
 
-// DELETE /api/dishes/:id — Always succeeds
 dishes.delete('/:id', async (c) => {
   const id = c.req.param('id');
 
@@ -89,7 +83,7 @@ dishes.delete('/:id', async (c) => {
   await deleteDish(c.env.DB, id);
 
   const clientId = c.req.header('X-Client-Id');
-  await notifyChange(c.env, 'dishes', id, 'delete', clientId);
+  notifyChange(c.env, 'dishes', id, 'delete', clientId);
 
   return c.json({ data: { id } });
 });

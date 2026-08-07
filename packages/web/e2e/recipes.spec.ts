@@ -3,7 +3,9 @@ import { seedDB } from './helpers/db';
 
 test.describe('Recetas', () => {
   test.beforeEach(async ({ page }) => {
-    // Block SSE connections to prevent wrangler Durable Object instability
+    // These specs don't cover realtime, so the SSE stream is cut. It was blocked
+    // because wrangler's Durable Object was unstable; it stays blocked because an
+    // open stream buys these specs nothing.
     await page.route('**/api/events*', (route) => route.abort());
     await seedDB();
   });
@@ -120,7 +122,6 @@ test.describe('Recetas', () => {
     await page.reload();
     await expect(nameInput).toBeVisible();
     await expect(deleteButtons).toHaveCount(3);
-    // Cost should have changed (no longer 2,84€)
     await expect(page.getByText('Coste total:')).toBeVisible();
     await expect(page.getByText('2,84')).not.toBeVisible();
   });

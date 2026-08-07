@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { IngredientUsageSchema, IngredientUsageResolvedSchema } from './ingredient.js';
-import { RecipeUsageSchema, RecipeUsageResolvedSchema } from './recipe.js';
+import { IngredientUsageSchema, IngredientUsageResolvedSchema } from './ingredient.ts';
+import { RecipeUsageSchema, RecipeUsageResolvedSchema } from './recipe.ts';
 
 // -- Plato (respuesta API, con todo resuelto) --
 

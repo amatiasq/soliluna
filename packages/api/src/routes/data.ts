@@ -1,9 +1,9 @@
 import { Hono } from 'hono';
-import type { Env } from '../types.js';
+import type { Env } from '../types.ts';
+import type { D1PreparedStatement } from '../db/d1.ts';
 
 const data = new Hono<{ Bindings: Env }>();
 
-// GET /api/data/export — Export all data as a single JSON object
 data.get('/export', async (c) => {
   const [ingredients, recipes, recipeIngredients, dishes, dishIngredients, dishRecipes] =
     await c.env.DB.batch([
@@ -29,8 +29,7 @@ data.get('/export', async (c) => {
   });
 });
 
-// POST /api/data/import — Import data from an export JSON.
-// Replaces all existing data (destructive).
+// Destructive: replaces everything.
 data.post('/import', async (c) => {
   const body = await c.req.json();
   const payload = body as {
@@ -47,7 +46,6 @@ data.post('/import', async (c) => {
     return c.json({ error: 'Unsupported export version' }, 400);
   }
 
-  // Clear all data
   await c.env.DB.batch([
     c.env.DB.prepare('DELETE FROM dish_recipes'),
     c.env.DB.prepare('DELETE FROM dish_ingredients'),
@@ -58,7 +56,6 @@ data.post('/import', async (c) => {
     c.env.DB.prepare('DELETE FROM deletions'),
   ]);
 
-  // Insert ingredients
   for (const row of payload.ingredients) {
     await c.env.DB.prepare(
       `INSERT INTO ingredients (id, name, pkg_size, pkg_unit, pkg_price, created_at, updated_at)
@@ -68,7 +65,6 @@ data.post('/import', async (c) => {
       .run();
   }
 
-  // Insert recipes
   for (const row of payload.recipes) {
     await c.env.DB.prepare(
       `INSERT INTO recipes (id, name, yield_amount, yield_unit, created_at, updated_at)
@@ -78,7 +74,6 @@ data.post('/import', async (c) => {
       .run();
   }
 
-  // Insert recipe_ingredients
   for (const row of payload.recipeIngredients) {
     await c.env.DB.prepare(
       `INSERT INTO recipe_ingredients (recipe_id, ingredient_id, amount, unit) VALUES (?, ?, ?, ?)`,
@@ -87,7 +82,6 @@ data.post('/import', async (c) => {
       .run();
   }
 
-  // Insert dishes
   for (const row of payload.dishes) {
     await c.env.DB.prepare(
       `INSERT INTO dishes (id, name, pax, delivery_date, notes, multiplier, created_at, updated_at)
@@ -97,7 +91,6 @@ data.post('/import', async (c) => {
       .run();
   }
 
-  // Insert dish_ingredients
   for (const row of payload.dishIngredients) {
     await c.env.DB.prepare(
       `INSERT INTO dish_ingredients (dish_id, ingredient_id, amount, unit) VALUES (?, ?, ?, ?)`,
@@ -106,7 +99,6 @@ data.post('/import', async (c) => {
       .run();
   }
 
-  // Insert dish_recipes
   for (const row of payload.dishRecipes) {
     await c.env.DB.prepare(
       `INSERT INTO dish_recipes (dish_id, recipe_id, amount, unit) VALUES (?, ?, ?, ?)`,
@@ -118,9 +110,8 @@ data.post('/import', async (c) => {
   return c.json({ data: { message: 'Import complete' } });
 });
 
-// POST /api/data/migrate-v2 — Import data from Firebase v2 export format.
-// Expects the JSON from v2's /export page: { cakes, recipes, ingredients }
-// Converts: euros → cents, field names, denormalized → junction tables.
+// The JSON of v2's /export page: euros → cents, and denormalized → junction
+// tables. One-shot migration off Firebase.
 data.post('/migrate-v2', async (c) => {
   const body = await c.req.json();
   const v2 = body as {
@@ -177,26 +168,22 @@ data.post('/migrate-v2', async (c) => {
   const now = new Date().toISOString();
   const skipped: string[] = [];
 
-  // Helper: convert euros to cents (integer)
   const eurosToCents = (euros: number): number => Math.round(Number(euros) * 100);
 
-  // Helper: coerce string amounts to numbers (v2 has some amounts as strings)
+  // v2 has some amounts as strings.
   const toNumber = (value: unknown): number => {
     const n = Number(value);
     return isNaN(n) ? 0 : n;
   };
 
-  // Helper: convert Firebase Timestamp to ISO date string (YYYY-MM-DD)
   const timestampToDate = (ts?: { seconds: number } | null): string | null => {
     if (!ts || !ts.seconds) return null;
     return new Date(ts.seconds * 1000).toISOString().split('T')[0];
   };
 
-  // Collect all prepared statements, then execute in batches of 400
-  // (D1 limits to ~500 statements per batch call)
+  // Batches of 400: D1 takes ~500 statements per call.
   const statements: D1PreparedStatement[] = [];
 
-  // Clear all data
   statements.push(
     c.env.DB.prepare('DELETE FROM dish_recipes'),
     c.env.DB.prepare('DELETE FROM dish_ingredients'),
@@ -207,11 +194,9 @@ data.post('/migrate-v2', async (c) => {
     c.env.DB.prepare('DELETE FROM deletions'),
   );
 
-  // Sets of IDs that will be inserted (for reference checking)
   const ingredientIds = new Set<string>();
   const recipeIds = new Set<string>();
 
-  // 1. Prepare ingredient inserts (pkgPrice: euros → cents)
   for (const ing of v2.ingredients) {
     if (!ing.name) {
       skipped.push(`ingredient id=${ing.id}: missing name, skipping`);
@@ -234,7 +219,6 @@ data.post('/migrate-v2', async (c) => {
     ingredientIds.add(ing.id);
   }
 
-  // 2. Prepare recipe inserts (amount/unit → yield_amount/yield_unit)
   for (const rec of v2.recipes) {
     if (!rec.name) {
       skipped.push(`recipe id=${rec.id}: missing name, skipping`);
@@ -248,7 +232,6 @@ data.post('/migrate-v2', async (c) => {
     );
     recipeIds.add(rec.id);
 
-    // Prepare recipe ingredient inserts from the embedded array
     for (const usage of rec.ingredients) {
       const amount = toNumber(usage.amount);
       if (amount <= 0) {
@@ -268,7 +251,6 @@ data.post('/migrate-v2', async (c) => {
     }
   }
 
-  // 3. Prepare dish inserts (cakes → dishes, date → delivery_date)
   for (const cake of v2.cakes) {
     const deliveryDate = timestampToDate(cake.date);
 
@@ -288,7 +270,6 @@ data.post('/migrate-v2', async (c) => {
       ),
     );
 
-    // Prepare dish ingredient inserts from the embedded array
     for (const usage of cake.ingredients) {
       const amount = toNumber(usage.amount);
       if (amount <= 0 || !ingredientIds.has(usage.id)) continue;
@@ -300,7 +281,6 @@ data.post('/migrate-v2', async (c) => {
       );
     }
 
-    // Prepare dish recipe inserts from the embedded array
     for (const usage of cake.recipes) {
       const amount = toNumber(usage.amount);
       if (amount <= 0 || !recipeIds.has(usage.id)) continue;
@@ -313,7 +293,6 @@ data.post('/migrate-v2', async (c) => {
     }
   }
 
-  // Execute all statements in batches of 400
   const BATCH_SIZE = 400;
   for (let i = 0; i < statements.length; i += BATCH_SIZE) {
     const batch = statements.slice(i, i + BATCH_SIZE);

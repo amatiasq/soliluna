@@ -1,8 +1,12 @@
 node_modules/
 dist/
-.wrangler/
 .dev.vars
 *.local
 .DS_Store
 test-results/
 packages/web/dev-dist
+
+# The local SQLite databases (dev and the PWA suite), and their WAL sidecars.
+*.db
+*.db-wal
+*.db-shm

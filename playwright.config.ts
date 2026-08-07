@@ -8,6 +8,10 @@ export default defineConfig({
 
   use: {
     baseURL: 'http://localhost:5173',
+    // The API is behind Basic auth. src/dev.ts falls back to these credentials
+    // when .dev.vars sets none. `send: 'always'` avoids depending on the 401
+    // challenge surviving the Vite dev proxy.
+    httpCredentials: { username: 'dev', password: 'dev', send: 'always' },
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
   },
@@ -25,7 +29,8 @@ export default defineConfig({
 
   webServer: [
     {
-      command: 'pnpm --filter @soliluna/api dev',
+      // dev:once, not dev: `node --watch` would restart the API mid-suite.
+      command: 'pnpm --filter @soliluna/api dev:once',
       port: 8787,
       reuseExistingServer: !process.env.CI,
     },

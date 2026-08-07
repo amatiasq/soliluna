@@ -4,9 +4,10 @@
 #
 # Mirrors .github/workflows/ci-soliluna.yml so a green CI run and a local
 # `amq soliluna check` cannot diverge:
-#   install deps (pnpm) + typecheck (pnpm -r typecheck across all packages).
+#   install deps (pnpm) + typecheck (pnpm -r typecheck) + tests unitarios.
 #
-# Runtime: pnpm workspaces (Node). Install uses --frozen-lockfile (like CI) and
+# Runtime: pnpm workspaces (Node 24; la API se ejecuta sin compilar, y el type
+# stripping de Node hace falta para eso). Install uses --frozen-lockfile (like CI) and
 # is skipped when node_modules is already present so repeated local runs stay
 # fast; CI has no node_modules and installs fresh.
 
@@ -17,6 +18,7 @@ if [[ "$1" == "-h" || "$1" == "--help" ]]; then
   echo "Runs the full CI check for soliluna (pnpm workspaces):"
   echo "  1. pnpm install --frozen-lockfile (skipped when node_modules exists)"
   echo "  2. pnpm -r typecheck"
+  echo "  3. pnpm test:unit (shared: el dinero; api: el shim de SQLite)"
   echo
   echo "Mirrors .github/workflows/ci-soliluna.yml. Does nothing else."
   exit 0
@@ -31,3 +33,6 @@ fi
 
 echo "==> typecheck (pnpm -r typecheck)"
 pnpm -r typecheck
+
+echo "==> tests unitarios (pnpm test:unit)"
+pnpm test:unit

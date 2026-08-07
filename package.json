@@ -6,10 +6,10 @@
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm test:unit",
-    "test:unit": "pnpm --filter @soliluna/shared test",
+    "test:unit": "pnpm --filter @soliluna/shared --filter @soliluna/api test",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
-    "deploy": "pnpm --filter @soliluna/web build && pnpm --filter @soliluna/api run wrangler:deploy"
+    "test:e2e:pwa": "playwright test -c playwright.pwa.config.ts",
+    "test:e2e:ui": "playwright test --ui"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.1"

@@ -1,8 +1,6 @@
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
 import type { Ingredient, Recipe, Dish } from '@soliluna/shared';
 
-// -- Schema types --
-
 export interface OutboxEntry {
   id?: number; // auto-incremented by IndexedDB
   method: string;
@@ -23,11 +21,8 @@ interface SolilunaDB extends DBSchema {
 
 export type StoreName = 'ingredients' | 'recipes' | 'dishes';
 
-// -- Database singleton --
-
 let dbInstance: IDBPDatabase<SolilunaDB> | null = null;
 
-/** Returns a singleton connection to the local IndexedDB database. */
 export async function getDB(): Promise<IDBPDatabase<SolilunaDB>> {
   if (dbInstance) return dbInstance;
 
@@ -44,9 +39,6 @@ export async function getDB(): Promise<IDBPDatabase<SolilunaDB>> {
   return dbInstance;
 }
 
-// -- Generic store operations --
-
-/** Read all items from a store. */
 export async function getAllFromStore<T extends StoreName>(
   storeName: T,
 ): Promise<SolilunaDB[T]['value'][]> {
@@ -54,7 +46,6 @@ export async function getAllFromStore<T extends StoreName>(
   return db.getAll(storeName);
 }
 
-/** Read a single item from a store by id. */
 export async function getFromStore<T extends StoreName>(
   storeName: T,
   id: string,
@@ -63,7 +54,6 @@ export async function getFromStore<T extends StoreName>(
   return db.get(storeName, id);
 }
 
-/** Write a single item to a store (insert or replace). */
 export async function putInStore<T extends StoreName>(
   storeName: T,
   item: SolilunaDB[T]['value'],
@@ -72,7 +62,7 @@ export async function putInStore<T extends StoreName>(
   await db.put(storeName, item);
 }
 
-/** Replace all items in a store: clears existing data, then writes the new array. */
+/** Clears the store before writing. */
 export async function putAllInStore<T extends StoreName>(
   storeName: T,
   items: SolilunaDB[T]['value'][],
@@ -86,7 +76,6 @@ export async function putAllInStore<T extends StoreName>(
   await tx.done;
 }
 
-/** Delete a single item from a store by id. */
 export async function deleteFromStore<T extends StoreName>(
   storeName: T,
   id: string,
@@ -95,9 +84,6 @@ export async function deleteFromStore<T extends StoreName>(
   await db.delete(storeName, id);
 }
 
-// -- Outbox operations (for offline mutations) --
-
-/** Add a pending mutation to the outbox queue. */
 export async function addToOutbox(
   entry: Omit<OutboxEntry, 'id' | 'createdAt' | 'retries' | 'status'>,
 ): Promise<void> {
@@ -110,7 +96,6 @@ export async function addToOutbox(
   });
 }
 
-/** Get all pending outbox entries, in FIFO order. */
 export async function getOutboxEntries(): Promise<(OutboxEntry & { id: number })[]> {
   const db = await getDB();
   const all = await db.getAll('outbox');
@@ -119,13 +104,11 @@ export async function getOutboxEntries(): Promise<(OutboxEntry & { id: number })
     .map((entry) => entry as OutboxEntry & { id: number });
 }
 
-/** Remove a successfully synced entry from the outbox. */
 export async function removeFromOutbox(id: number): Promise<void> {
   const db = await getDB();
   await db.delete('outbox', id);
 }
 
-/** Mark an entry as permanently failed after too many retries. */
 export async function markOutboxFailed(id: number): Promise<void> {
   const db = await getDB();
   const entry = await db.get('outbox', id);
@@ -133,7 +116,6 @@ export async function markOutboxFailed(id: number): Promise<void> {
   await db.put('outbox', { ...entry, status: 'failed' });
 }
 
-/** Increment the retry count on an outbox entry. */
 export async function incrementOutboxRetries(id: number): Promise<void> {
   const db = await getDB();
   const entry = await db.get('outbox', id);
@@ -141,16 +123,12 @@ export async function incrementOutboxRetries(id: number): Promise<void> {
   await db.put('outbox', { ...entry, retries: entry.retries + 1 });
 }
 
-// -- Metadata key-value store --
-
-/** Read a metadata value by key. Returns undefined if the key does not exist. */
 export async function getMeta(key: string): Promise<string | undefined> {
   const db = await getDB();
   const row = await db.get('meta', key);
   return row?.value;
 }
 
-/** Write a metadata key-value pair. */
 export async function setMeta(key: string, value: string): Promise<void> {
   const db = await getDB();
   await db.put('meta', { key, value });
