@@ -1,0 +1,17 @@
+#!/bin/bash -e
+
+# Restaura un backup en PRODUCCIÓN. ⚠️ DESTRUCTIVO — reemplaza la base viva.
+# El argumento es un fragmento (p. ej. una fecha) que se busca en backups/ del
+# VPS; sin argumento, restore.sh lista lo que hay.
+#
+#   amq soliluna restore 2026-08-10     # restaura el que coincida
+#   amq soliluna restore                # lista los disponibles
+#
+# Igual que en conta: infra/restore.sh se manda por tubería y se ejecuta allí,
+# así que el fichero local es la fuente y nunca corre una copia vieja del
+# servidor. `bash -es -- "$1"`: -s lo lee de stdin, -e recupera el errexit que el
+# shebang no pone al no ejecutarse, y el fragmento va como argumento posicional.
+
+SERVICE="${SOLILUNA_SERVICE:-soliluna}"
+
+amq vps ssh "VPS_DIR=\$HOME/vps SERVICE=$SERVICE bash -es -- '$1'" < infra/restore.sh

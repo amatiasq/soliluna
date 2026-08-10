@@ -64,7 +64,16 @@ La base de datos guarda las cantidades **tal como las escribe el usuario**
   Que no existan es la primera línea; la auth es la segunda.
 - **El backup se hace con `VACUUM INTO`**, no con `cp`: es la única forma de
   sacar una instantánea consistente con la base en caliente. Y una copia dentro
-  del propio VPS todavía no es un backup: sacarla de ahí sigue pendiente.
+  del propio VPS todavía no es un backup: sacarla de ahí es `amq soliluna
+  backup`, que la baja y la deja también en Cereza.
+- **`amq soliluna backup` y `restore` no han corrido nunca contra un servidor**,
+  porque la v3 no está desplegada y el dato vive todavía en D1. Son la condición
+  de cierre del corte, no un detalle posterior:
+  [`backups-3-2-1.md`](../.agents/plans/backups-3-2-1.md).
+- **Al restaurar hay que parar la app y borrar los `-wal` y `-shm`.** Son el
+  diario de la base vieja: junto a la nueva, SQLite los cree suyos y reproduce
+  encima escrituras que no le tocan. Es lo que se lleva por delante un restore, y
+  la razón de que `infra/restore.sh` sea un script y no tres comandos.
 - **Los datos son un fichero SQLite en un volumen**, no una base gestionada.
   `amq deploy-infra` excluye `data/` del rsync para que una copia local no pueda
   pisar la del servidor.
