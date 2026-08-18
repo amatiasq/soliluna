@@ -3,6 +3,23 @@
 **Status:** Done. Desplegado y verificado en producción (184 peticiones sin
 credenciales a `/`, `/sw.js` y todas las rutas de datos: 401 sin una excepción).
 
+## Lo que queda vivo
+
+- **Cerrar la API no des-filtra nada.** Los datos —costes, recetas y precios de
+  una pastelería real— estuvieron legibles en una URL pública durante meses; hay
+  que asumir que pudieron copiarse.
+- **Las credenciales hay que rotarlas**:
+  [`../plans/rotar-credenciales.md`](../plans/rotar-credenciales.md).
+- **Es copia-pega de `conta/api/auth.ts` y se queda así** (migrar `conta` a Hono
+  se descartó el mismo día). Son dos copias que pueden divergir: si se arregla
+  algo aquí, apuntarlo allí. `conta` compara la contraseña sin tiempo constante;
+  aquí se hizo con `timingSafeEqual` de entrada.
+- **Estuvo abierta meses porque había auth escrita en los dos extremos y sin
+  conectar**: JWT en cookie, login con Google, `Login.tsx`, `AuthProvider`, y un
+  `auth/config.ts` con `CHANGE_ME.apps.googleusercontent.com`. Se borró todo en
+  vez de aparcarlo — **código muerto que parece seguridad es peor que no
+  tenerlo**.
+
 ## Decisión
 
 **Basic auth copiando `conta/api/auth.ts`**, que ya protege movimientos

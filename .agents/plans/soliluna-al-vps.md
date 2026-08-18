@@ -1,9 +1,9 @@
 # Plan — Soliluna entero en el VPS
 
-**Blocker:** falta el backup fuera del VPS, y falta el item de 1Password con las
-credenciales (que hay que rotar: se expusieron).
 **Status:** 🟡 fases 0 y 1 hechas; la 2 escrita y probada en local, **sin
 desplegar**.
+**Blocker:** falta el backup fuera del VPS, y falta el item de 1Password con las
+credenciales (que hay que rotar: se expusieron).
 
 Objetivo: **soliluna depende de un solo sistema, y ese sistema es el VPS.** Hoy
 depende de tres a la vez —el nginx del VPS que proxea a GitHub Pages (la v2), el
@@ -36,7 +36,7 @@ plataforma, y eso vale en las dos direcciones.
 
 ## Fases
 
-- **0 — cerrar la API. ✅** [`cerrar-la-api.md`](cerrar-la-api.md). Poner la v3
+- **0 — cerrar la API. ✅** [`cerrar-la-api-con-basic-auth.md`](../decisions/2026-08-06%20cerrar-la-api-con-basic-auth.md). Poner la v3
   en el dominio bueno con la API abierta convertía un agujero en una URL
   adivinable en un agujero en la URL del negocio.
 - **1 — desacoplar de Cloudflare, sin desplegar nada. ✅** Los tres bindings, y
@@ -56,6 +56,10 @@ plataforma, y eso vale en las dos direcciones.
   versión que funcionaba.
 - **4 — retirar Cloudflare.** `wrangler delete`, y no borrar la D1 el mismo día:
   es el rollback. El backup del SQLite entra aquí y es **condición de cierre**.
+  **Ojo: en el repo ya no queda config de Cloudflare** —
+  `packages/api/wrangler.toml` se borró en `64cfbd12`, que es la fase 1 — así que
+  el `wrangler delete` va por nombre de Worker y de base D1, sacados del panel, no
+  de un fichero de aquí. Apuntarlos antes de necesitarlos.
 
 ## Decidido al implementar (2026-08-06)
 
@@ -78,7 +82,10 @@ plataforma, y eso vale en las dos direcciones.
 
 ## Pendiente de decidir
 
-- **Cómo sale el backup del VPS**: la copia local ya la hace `infra/backup.sh`;
-  falta el destino de fuera y el cron. Es condición de cierre.
+- ~~**Cómo sale el backup del VPS**~~: ya no está por decidir. `infra/backup.sh`
+  hace la copia local y el mecanismo de fuera existe —el tirón que Cereza lanza a
+  diario, en [`backups-3-2-1.md`](../../../.agents/plans/backups-3-2-1.md)—, sólo
+  que **no puede incluir a soliluna hasta que el stack exista en el VPS**. Sigue
+  siendo condición de cierre, pero es trabajo, no una decisión.
 - **Qué se hace con la v2** más allá de apagarla: ¿archivar el repo de Pages, o
   borrarlo?
