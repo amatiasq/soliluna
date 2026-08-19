@@ -1,0 +1,49 @@
+#!/bin/bash -e
+
+# amq soliluna dotenv — imprime el `.env` de soliluna desde 1Password, por stdout.
+#
+#   SOLILUNA_AUTH   "usuario:pass,usuario2:pass2" — la auth es fail-closed: sin
+#                   esto la app responde 503 a todo.
+#   SOLILUNA_HOST   el dominio que sirve este stack. No es secreto: se deriva de
+#                   la carpeta, igual que el DNS. `soliluna` → soliluna.amatiasq.com.
+#
+# `SOLILUNA_AUTH` no es un campo de un item: se compone de la credencial de cada
+# usuario, en su propio login, porque una es compartida y la otra no. Aquí se
+# nombran los items; el valor no aparece nunca.
+#
+# Config (env):
+#   SOLILUNA_SERVICE   carpeta del stack en el VPS (default: soliluna)
+
+SERVICE="${SOLILUNA_SERVICE:-soliluna}"
+HOST="$SERVICE.amatiasq.com"
+
+AMATIASQ=zxiv446rm7rwvt3qw2bmuv3dya  # Soliluna / amatiasq
+MIKA=doss62czmn5mowto44g2mrdoiy      # Soliluna / mika
+
+# `op ... | jq` devolvería el código de salida de `jq` y una contraseña vacía
+# pasaría por buena, dejando a ese usuario fuera sin decir nada. Dos pasos.
+credential() {
+  local json user password
+  json="$(amq op item get "$1")"
+
+  user="$(jq -r '.fields[] | select(.id == "username") | .value' <<< "$json")"
+  password="$(jq -r '.fields[] | select(.id == "password") | .value' <<< "$json")"
+
+  if [[ -z "$user" || "$user" == null || -z "$password" || "$password" == null ]]; then
+    echo "El item $1 no tiene usuario y contraseña; SOLILUNA_AUTH quedaría a medias." >&2
+    return 1
+  fi
+
+  # El formato es crudo: una coma parte el par y deja al usuario fuera.
+  if [[ "$password" == *,* || "$password" == *:* ]]; then
+    echo "La contraseña de $1 lleva una coma o dos puntos; SOLILUNA_AUTH se rompería." >&2
+    return 1
+  fi
+
+  printf '%s:%s' "$user" "$password"
+}
+
+AUTH="$(credential "$AMATIASQ"),$(credential "$MIKA")"
+
+echo "SOLILUNA_HOST=$HOST"
+echo "SOLILUNA_AUTH=$AUTH"

@@ -24,20 +24,6 @@ IMAGE="docker.amatiasq.com/soliluna"
 SERVICE="${SOLILUNA_SERVICE:-soliluna}"
 STAMP="$(date +%Y-%m-%dT%H-%M-%S)"
 
-# La auth es fail-closed: sin el secreto en el .env del servidor, la app entera
-# responde 503. Se comprueba antes de construir nada.
-if ! amq vps ssh "grep -q '^SOLILUNA_AUTH=' ~/vps/docker/$SERVICE/.env" 2>/dev/null; then
-  echo "Falta SOLILUNA_AUTH en ~/vps/docker/$SERVICE/.env; la app daría 503 en todo." >&2
-  echo "Ponlo con: amq soliluna secrets" >&2
-  exit 1
-fi
-
-if ! amq vps ssh "grep -q '^SOLILUNA_HOST=' ~/vps/docker/$SERVICE/.env" 2>/dev/null; then
-  echo "Falta SOLILUNA_HOST en ~/vps/docker/$SERVICE/.env; compose no sabría qué dominio servir." >&2
-  echo "Ponlo con: amq soliluna secrets" >&2
-  exit 1
-fi
-
 echo "==> tests (unit)"
 pnpm test:unit
 
@@ -51,6 +37,12 @@ docker tag "$IMAGE:latest" "$IMAGE:$(date +%Y-%m-%dT%H-%M-%S)"
 echo "==> pushing image"
 docker push "$IMAGE:latest"
 docker push "$IMAGE:$STAMP"
+
+# La auth es fail-closed: sin el secreto, la app entera responde 503. Ya no se
+# comprueba que el `.env` esté puesto, se escribe: 1Password es la fuente de
+# verdad y esto es lo que hace del fichero del servidor un derivado.
+echo "==> secretos al VPS (desde 1Password)"
+amq soliluna secrets
 
 echo "==> ship infra (compose + scripts) to VPS as '$SERVICE'"
 amq vps deploy "$SERVICE"
