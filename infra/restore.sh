@@ -58,7 +58,8 @@ echo "==> comprobando la base restaurada"
 docker compose exec -T app node --input-type=module -e "
   import { DatabaseSync } from 'node:sqlite';
   const db = new DatabaseSync(process.env.DB_PATH);
-  const [{ result }] = db.prepare('PRAGMA integrity_check').all();
+  const [row] = db.prepare('PRAGMA integrity_check').all();
+  const result = Object.values(row)[0];
   if (result !== 'ok') { console.error('integrity_check: ' + result); process.exit(1); }
   const tables = db.prepare(\"select name from sqlite_master where type='table' and name not like 'sqlite_%'\").all();
   for (const { name } of tables) {
