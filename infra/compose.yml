@@ -16,7 +16,7 @@ services:
       LETSENCRYPT_HOST: ${SOLILUNA_HOST}
       LETSENCRYPT_EMAIL: amatiasq@gmail.com
     volumes:
-      # Los datos. `amq deploy-infra` excluye `data/` del rsync justamente para
+      # Los datos. `amq vps deploy` excluye `data/` del rsync justamente para
       # que una copia local no pueda pisar la del servidor.
       - ./data:/data
     healthcheck:

@@ -10,7 +10,7 @@ staging del servidor (ver [`../.agents/plans/soliluna-al-vps.md`](../.agents/pla
 Si hubiera que tocar este stack antes del corte:
 
 ```sh
-INFRA_DIR=infra-v2 amq deploy-infra soliluna
+INFRA_DIR=infra-v2 amq vps deploy soliluna
 amq vps pull-and-restart soliluna
 ```
 

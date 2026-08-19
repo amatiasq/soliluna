@@ -75,7 +75,7 @@ La base de datos guarda las cantidades **tal como las escribe el usuario**
   encima escrituras que no le tocan. Es lo que se lleva por delante un restore, y
   la razón de que `infra/restore.sh` sea un script y no tres comandos.
 - **Los datos son un fichero SQLite en un volumen**, no una base gestionada.
-  `amq deploy-infra` excluye `data/` del rsync para que una copia local no pueda
+  `amq vps deploy` excluye `data/` del rsync para que una copia local no pueda
   pisar la del servidor.
 - **Durante la migración el dominio bueno sirve todavía la v2.** Lo que hay en
   `soliluna.amatiasq.com` es `infra-v2/`; la v3 va a staging con
