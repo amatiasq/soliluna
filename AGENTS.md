@@ -69,7 +69,7 @@ La base de datos guarda las cantidades **tal como las escribe el usuario**
 - **`amq soliluna backup` y `restore` no han corrido nunca contra un servidor**,
   porque la v3 no está desplegada y el dato vive todavía en D1. Son la condición
   de cierre del corte, no un detalle posterior:
-  [`backups-3-2-1.md`](../.agents/plans/backups-3-2-1.md).
+  [`2026-08-20 backup-3-2-1.md`](../.agents/decisions/2026-08-20%20backup-3-2-1.md).
 - **Al restaurar hay que parar la app y borrar los `-wal` y `-shm`.** Son el
   diario de la base vieja: junto a la nueva, SQLite los cree suyos y reproduce
   encima escrituras que no le tocan. Es lo que se lleva por delante un restore, y
@@ -80,7 +80,7 @@ La base de datos guarda las cantidades **tal como las escribe el usuario**
 - **Durante la migración el dominio bueno sirve todavía la v2.** Lo que hay en
   `soliluna.amatiasq.com` es `infra-v2/`; la v3 va a staging con
   `SOLILUNA_SERVICE=soliluna-v3 amq soliluna deploy`. El corte y el apagado de
-  la v2: [`.agents/plans/soliluna-al-vps.md`](.agents/plans/soliluna-al-vps.md).
+  la v2: [`.agents/plans/soliluna-el-corte.md`](.agents/plans/soliluna-el-corte.md).
 
 ## Convenciones de código
 

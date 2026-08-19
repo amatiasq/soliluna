@@ -8,8 +8,8 @@ credenciales a `/`, `/sw.js` y todas las rutas de datos: 401 sin una excepción)
 - **Cerrar la API no des-filtra nada.** Los datos —costes, recetas y precios de
   una pastelería real— estuvieron legibles en una URL pública durante meses; hay
   que asumir que pudieron copiarse.
-- **Las credenciales hay que rotarlas**:
-  [`../plans/rotar-credenciales.md`](../plans/rotar-credenciales.md).
+- **Las credenciales se pusieron iguales a las de `conta`, y ya están rotadas**:
+  [`2026-08-20 credenciales-de-soliluna-rotadas.md`](2026-08-20%20credenciales-de-soliluna-rotadas.md).
 - **Es copia-pega de `conta/api/auth.ts` y se queda así** (migrar `conta` a Hono
   se descartó el mismo día). Son dos copias que pueden divergir: si se arregla
   algo aquí, apuntarlo allí. `conta` compara la contraseña sin tiempo constante;

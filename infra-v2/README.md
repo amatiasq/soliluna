@@ -5,7 +5,7 @@ la versión vieja de la app. Esto sigue siendo lo que hay en producción.
 
 **No es lo que despliega `amq soliluna deploy`.** Ese comando despliega la v3, el
 proceso Node de `../infra/`, y durante la migración lo hace a una carpeta de
-staging del servidor (ver [`../.agents/plans/soliluna-al-vps.md`](../.agents/plans/soliluna-al-vps.md)).
+staging del servidor (ver [`../.agents/plans/soliluna-el-corte.md`](../.agents/plans/soliluna-el-corte.md)).
 
 Si hubiera que tocar este stack antes del corte:
 
