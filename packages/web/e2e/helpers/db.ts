@@ -26,7 +26,7 @@ async function fetchWithRetry(
   throw new Error(`Request failed after ${retries} retries: ${url}`);
 }
 
-export async function resetDB() {
+async function resetDB() {
   await fetchWithRetry(`${API}/api/__test/reset`, {
     method: 'POST',
     headers: { Authorization: AUTH },

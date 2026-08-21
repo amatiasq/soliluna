@@ -4,7 +4,7 @@ import { serveStatic } from '@hono/node-server/serve-static';
 import type { MiddlewareHandler } from 'hono';
 
 /** Where the web build leaves its output. Overridable for the container. */
-export const WEB_DIST = resolve(process.env.WEB_DIST ?? join(import.meta.dirname, '../../web/dist'));
+const WEB_DIST = resolve(process.env.WEB_DIST ?? join(import.meta.dirname, '../../web/dist'));
 
 export function serveWebAssets(): MiddlewareHandler {
   return serveStatic({ root: WEB_DIST });
