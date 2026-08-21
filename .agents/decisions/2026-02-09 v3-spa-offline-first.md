@@ -1,6 +1,6 @@
 # 2026-02-09 — La v3: SPA offline-first, sin ORM
 
-**Status:** Done. Las seis fases del plan (bootstrap, API, UI, offline, SSE,
+Las seis fases del plan (bootstrap, API, UI, offline, SSE,
 hardening) se hicieron sobre Cloudflare; el 2026-08-06 la app se movió a un
 proceso Node en el VPS sin tocar ni el esquema ni las rutas.
 

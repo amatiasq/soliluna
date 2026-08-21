@@ -22,5 +22,6 @@ Worker: rotar el `.env` del VPS no cambia lo que pide una app que no está ahí.
 un criterio de cierre de [`soliluna-el-corte.md`](../plans/soliluna-el-corte.md),
 no de aquí.
 
-Y **las de `conta` se consideran expuestas** desde el día en que se compartieron:
-[`conta/.agents/plans/rotar-credenciales-de-conta.md`](../../../conta/.agents/plans/rotar-credenciales-de-conta.md).
+Y **las de `conta` se consideraron expuestas** desde el día en que se
+compartieron; ya están rotadas:
+[`2026-08-21 credenciales-de-conta-rotadas.md`](../../../conta/.agents/decisions/2026-08-21%20credenciales-de-conta-rotadas.md).

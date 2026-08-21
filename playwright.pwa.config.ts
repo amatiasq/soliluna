@@ -1,12 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
 
-// The service worker suite, separate from playwright.config.ts because it needs
-// a different server: the built bundle served by the app process itself, with
-// Basic auth on. The main suite runs against the Vite dev server, which
-// registers no service worker at all.
-//
-// The API entry here is src/dev.ts, which falls back to dev:dev credentials.
-// Each spec builds its own browser contexts, so there is no shared `use` block.
+// The service worker suite, apart from playwright.config.ts because it needs
+// a different server: the built bundle served by the app process with Basic
+// auth on — the Vite dev server registers no service worker at all. The API
+// entry is src/dev.ts, which falls back to dev:dev credentials.
 
 export default defineConfig({
   testDir: './packages/web/e2e-pwa',

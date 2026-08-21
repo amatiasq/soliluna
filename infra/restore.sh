@@ -1,21 +1,17 @@
 #!/bin/bash -e
 
-# Restaura un backup del SQLite de soliluna. Se ejecuta EN EL SERVIDOR, por
-# tubería desde `amq soliluna restore`.
+# Restaura un backup del SQLite de soliluna. Corre EN EL SERVIDOR, por tubería
+# desde `amq soliluna restore`.
 #
-# ⚠️ DESTRUCTIVO: reemplaza la base viva. El argumento es un fragmento (una
-# fecha, o el nombre entero) que se busca en backups/; sin argumento, lista.
+# ⚠️ DESTRUCTIVO: reemplaza la base viva. El argumento es un fragmento del
+# nombre; sin argumento, lista. El orden importa —por eso es un script—:
 #
-# El orden importa y es la razón de que esto sea un script y no tres comandos:
-#
-# 1. **Parar la app antes de tocar el fichero.** Un proceso con la base abierta
-#    tiene páginas en memoria y un WAL a medio volcar; sustituirle el fichero
-#    debajo no restaura nada, corrompe las dos cosas.
-# 2. **Borrar los sidecars `-wal` y `-shm`.** Son el diario de la base VIEJA. Si
-#    se quedan al lado de la nueva, SQLite los cree suyos y reproduce encima
-#    escrituras que no le corresponden. Es la trampa que se lleva el restore.
-# 3. **Apartar la base actual, no borrarla.** Restaurar el backup equivocado es
-#    justo el momento en que más falta hace la copia de lo que había.
+# 1. Parar la app: sustituir el fichero bajo un proceso con WAL a medio volcar
+#    corrompe las dos cosas.
+# 2. Borrar los sidecars `-wal`/`-shm`: son el diario de la base VIEJA y
+#    SQLite los reproduciría encima de la nueva.
+# 3. Apartar la base actual, no borrarla: restaurar el backup equivocado es
+#    cuando más falta hace la copia de lo que había.
 
 cd "${VPS_DIR:?VPS_DIR is not set}/docker/${SERVICE:-soliluna}"
 

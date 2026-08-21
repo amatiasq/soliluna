@@ -1,13 +1,10 @@
 import { test, expect, chromium } from '@playwright/test';
 
-// The Basic auth gate lives in the service worker as much as in the API, and only
-// the built bundle has a service worker — the Vite dev server the main suite runs
-// against does not register one. So this suite talks to the app process itself
-// serving packages/web/dist. See playwright.pwa.config.ts.
-//
-// The hole it guards: the generated workbox worker served the precached shell
-// before touching the network, so cancelling the auth dialog still rendered the
-// whole app from cache.
+// The Basic auth gate lives in the service worker as much as in the API, and
+// only the built bundle has one: this suite talks to the app process serving
+// packages/web/dist (see playwright.pwa.config.ts). The hole it guards: the
+// workbox worker served the precached shell before touching the network, so
+// cancelling the auth dialog still rendered the whole app from cache.
 
 const BASE = 'http://localhost:8790';
 const CREDS = { username: 'dev', password: 'dev', send: 'always' as const };

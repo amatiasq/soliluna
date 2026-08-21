@@ -1,16 +1,10 @@
 #!/bin/bash -e
 
-# Copia consistente del SQLite de soliluna a backups/soliluna-<fecha>.db.
-# Se ejecuta EN EL SERVIDOR, desde la carpeta del stack:
-#
+# Copia consistente del SQLite de soliluna a backups/. Corre EN EL SERVIDOR:
 #   VPS_DIR=$HOME/vps ~/vps/docker/soliluna/backup.sh
-#
-# `VACUUM INTO` es la forma correcta de copiar una base SQLite en caliente: hace
-# una instantánea consistente aunque haya escrituras y aunque el WAL tenga cosas
-# sin volcar. Copiar el fichero con `cp` no lo es.
-#
-# OJO: esto es la copia local, y una copia local no es un backup. Sacarla del VPS
-# sigue pendiente — ver .agents/plans/backups-3-2-1.md en la raíz del monorepo.
+# `VACUUM INTO`, no `cp`: instantánea consistente aunque haya escrituras y WAL
+# sin volcar.
+
 
 cd "${VPS_DIR:?VPS_DIR is not set}/docker/${SERVICE:-soliluna}"
 

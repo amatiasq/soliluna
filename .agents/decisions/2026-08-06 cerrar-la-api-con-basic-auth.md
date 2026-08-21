@@ -1,6 +1,6 @@
 # 2026-08-06 — Cerrar la API con Basic auth
 
-**Status:** Done. Desplegado y verificado en producción (184 peticiones sin
+Verificado en producción (184 peticiones sin
 credenciales a `/`, `/sw.js` y todas las rutas de datos: 401 sin una excepción).
 
 ## Lo que queda vivo

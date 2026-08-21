@@ -1,7 +1,7 @@
 #!/bin/bash -e
-
-# amq soliluna deploy — construye la imagen, la sube, y reinicia el contenedor en
-# el VPS. Un solo proceso Node sirve la app y la API en el mismo origen, así que
+#
+# amq soliluna deploy [--no-secrets] — construye la imagen, la sube, y reinicia
+# el contenedor en el VPS. Un solo proceso Node sirve la app y la API en el mismo origen, así que
 # esto es todo el despliegue: no queda nada en Cloudflare.
 #
 # La imagen se construye para linux/amd64 (esta máquina es arm64) y se etiqueta
@@ -9,6 +9,10 @@
 #
 # La app no se compila: Node ejecuta el TypeScript directamente. Lo único que se
 # construye es el bundle de la web, y eso pasa dentro del Dockerfile.
+#
+# `--no-secrets` salta `amq soliluna secrets`, el único paso que abre 1Password:
+# el `.env` del servidor se queda como está. Está para lo desatendido —un
+# agente—, no para ti: tu deploy despliega todo.
 #
 # Config (env):
 #   SOLILUNA_SERVICE   carpeta del stack en el VPS (default: soliluna)
@@ -19,6 +23,14 @@
 #
 # Ver .agents/plans/soliluna-al-vps.md. `soliluna` es la carpeta que sirve el
 # dominio bueno, y hasta el corte ahí vive todavía la v2 (../infra-v2/).
+
+SECRETS=1
+case "${1:-}" in
+  '') ;;
+  --no-secrets) SECRETS=0;;
+  -h|--help) awk 'NR>1 && !/^#/{exit} NR>1{sub(/^# ?/, ""); print}' "$0"; exit 0;;
+  *) echo "opción desconocida: $1" >&2; exit 1;;
+esac
 
 IMAGE="docker.amatiasq.com/soliluna"
 SERVICE="${SOLILUNA_SERVICE:-soliluna}"
@@ -41,8 +53,12 @@ docker push "$IMAGE:$STAMP"
 # La auth es fail-closed: sin el secreto, la app entera responde 503. Ya no se
 # comprueba que el `.env` esté puesto, se escribe: 1Password es la fuente de
 # verdad y esto es lo que hace del fichero del servidor un derivado.
-echo "==> secretos al VPS (desde 1Password)"
-amq soliluna secrets
+if [[ "$SECRETS" == 1 ]]; then
+  echo "==> secretos al VPS (desde 1Password)"
+  amq soliluna secrets
+else
+  echo "==> --no-secrets: el .env del VPS se queda como está"
+fi
 
 echo "==> ship infra (compose + scripts) to VPS as '$SERVICE'"
 amq vps deploy "$SERVICE"

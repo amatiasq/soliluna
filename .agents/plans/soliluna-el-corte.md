@@ -1,12 +1,12 @@
-# Plan — El corte: soliluna sale de Cloudflare
+# El corte: soliluna sale de Cloudflare
 
-**Status:** ⬜ el código está listo y probado en local, **sin desplegar**. Sale
-de partir [`2026-08-20 soliluna-desacoplado-de-cloudflare.md`](../decisions/2026-08-20%20soliluna-desacoplado-de-cloudflare.md).
-**Blocker:** ninguno para el paso 1, que ya tiene subdominio decidido. Los pasos
-2 y 3 sí piden manos humanas: **avisar a quien usa la app** antes de apagar la v2
-—es una tienda en marcha— y **apuntar del panel de Cloudflare** el nombre del
-Worker y de la base D1, porque el `packages/api/wrangler.toml` que los nombraba
-se borró en `64cfbd12` y sin ellos no hay `wrangler delete`.
+**Status:** ⚪ listo en local, sin desplegar (2026-08-20)
+**Manual:** avisar a quien usa la app, y apuntar el Worker y la D1 del panel —
+[pasos](#manual)
+
+Sale de partir
+[`2026-08-20 soliluna-desacoplado-de-cloudflare.md`](../decisions/2026-08-20%20soliluna-desacoplado-de-cloudflare.md).
+El paso 1 no espera a nadie: el subdominio ya está decidido.
 
 `soliluna.amatiasq.com` sirve la **v2** —un nginx que proxea a
 `amatiasq.github.io/soliluna/`— y la v3 sólo existe en una URL de `workers.dev`.
@@ -71,3 +71,15 @@ borrarlo?
 - No queda ningún `wrangler` en el camino de despliegue, ni Worker en pie.
 - `amatiasq.github.io/soliluna/` ya no lo sirve nada.
 - La E2E en verde contra el proceso Node.
+
+## Manual
+
+Dos cosas de los pasos 2 y 3 piden a una persona, porque la app es una tienda
+en marcha y los nombres que hay que borrar ya no están en ningún fichero.
+
+1. **Avisar a quien usa la app** antes de apagar la v2. Un mensaje con el día
+   del corte; el paso 2 no empieza sin respuesta.
+2. **Apuntar del panel de Cloudflare** (Workers & Pages, y Storage & Databases
+   → D1) el nombre exacto del Worker y el de la base D1, y dejarlos escritos
+   en este plan. El `wrangler.toml` que los nombraba se borró en `64cfbd12`, y
+   sin ellos no hay `wrangler delete`.
